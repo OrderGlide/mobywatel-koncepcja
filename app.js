@@ -31,7 +31,11 @@ const I = {
   info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
   plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   spark: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>',
-  police: '<svg viewBox="0 0 24 24"><path d="M12 3l8 3-1 4H5L4 6zM6 10v3a6 6 0 0012 0v-3"/></svg>'
+  police: '<svg viewBox="0 0 24 24"><path d="M12 3l8 3-1 4H5L4 6zM6 10v3a6 6 0 0012 0v-3"/></svg>',
+  users: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.8 6 5.5"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  mic: '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg>',
+  eye: '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>'
 };
 
 const S = {
@@ -86,7 +90,7 @@ function line(icon, src, text, color) {
 
 async function step(s) {
   if (s.u !== undefined) { add(esc(s.u), 'msg u'); tr('prosba', 'Ty', s.u); await sleep(350); return; }
-  if (s.acting) { add(esc(s.acting), 'actingas'); tr('regula', 'Kod aplikacji', s.acting); await sleep(250); return; }
+  if (s.acting) { add(I.users + esc(s.acting), 'actingas'); tr('regula', 'Kod aplikacji', s.acting); await sleep(250); return; }
   if (s.read) { await sleep(320); line(I.check, s.read[0], s.read[1]); tr('odczyt', 'Asystent → ' + s.read[0], s.read[1]); logAccess(s.read[0], s.read[1]); return; }
   if (s.exec) { await sleep(450); const el = line(I.done, s.exec[0], s.exec[1]); el.querySelector('svg').style.color = 'var(--ok)'; tr('wykonanie', s.exec[0], s.exec[1]); return; }
   if (s.notify) { await sleep(300); const el = line(I.bell, 'Powiadomienie', s.notify); el.querySelector('svg').style.color = 'var(--warn)'; tr('powiadomienie', 'Kod aplikacji', s.notify); return; }
@@ -94,8 +98,8 @@ async function step(s) {
   if (s.say) {
     const ty = add('<i></i><i></i><i></i>', 'typing'); await sleep(750); ty.remove();
     let html = md(s.say);
-    if (s.src) html += `<button class="src">Skąd to wiem? (${s.src.length})</button><div class="srclist">${s.src.map(x => '• ' + esc(x)).join('<br>')}</div>`;
-    const el = add(html, 'msg a');
+    if (s.src) html += `<br><button class="src">${I.info}Skąd to wiem? · ${s.src.length}</button><div class="srclist">${s.src.map(x => '• ' + esc(x)).join('<br>')}</div>`;
+    const el = add(`<div class="av">${I.spark}</div><div class="msg a">${html}</div>`, 'arow');
     const b = el.querySelector('.src'); if (b) b.onclick = () => el.querySelector('.srclist').classList.toggle('on');
     await sleep(200); return;
   }
@@ -186,14 +190,14 @@ function confirmStep(c) {
   const code = 'CZ-' + fnv(c.title + body).slice(0, 4).toUpperCase() + '-' + fnv(body).slice(4, 8).toUpperCase();
   tr('propozycja', 'Asystent', 'Proponuje: ' + c.title + ' (' + code + ')');
   tr('regula', 'Kod aplikacji', c.rule);
-  const el = add(`<div class="ch"><b>${esc(c.title)}</b><span>${code}</span></div>
+  const el = add(`<div class="ch"><div class="t"><small>Do podpisu</small><b>${esc(c.title)}</b></div><span class="code">${code}</span></div>
     <div class="cb"><dl class="kv">${c.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>
     <p class="effect">${esc(c.effect)}</p><div class="rule">${I.lock}<span>${esc(c.rule)}</span></div></div>
     <div class="cf"><button class="btn ghost">Anuluj</button><button class="btn">${I.finger}Podpisz</button></div>`, 'confirm');
   const [cancel, sign] = el.querySelectorAll('.cf button');
   cancel.onclick = () => {
     if (S.busy) return;
-    finish('Anulowano. Nic nie zostało wysłane.', 'var(--red)');
+    finish('Anulowano. Nic nie zostało wysłane.', 'no');
     tr('anulowano', 'Ty', c.title + ' (' + code + ')');
     play(c.cancel || 'anuluj');
   };
@@ -201,14 +205,14 @@ function confirmStep(c) {
     if (S.busy) return;
     passkey(c.title, code, fnv(body) + fnv(code) + fnv(c.title), () => {
       S.min++; $('#clock').textContent = now();
-      finish(`✓ Podpisano o ${now()} kluczem tego telefonu`, 'var(--ok)');
+      finish(`Podpisano o ${now()} kluczem tego telefonu`, 'ok');
       tr('podpis', 'Ty, klucz urządzenia', 'Podpisano ' + c.title + ' (' + code + ')');
       play(c.ok);
     });
   };
-  function finish(text, color) {
+  function finish(text, kind) {
     el.classList.add('done');
-    el.querySelector('.cf').outerHTML = `<div class="stamp" style="color:${color}">${esc(text)}</div>`;
+    el.querySelector('.cf').outerHTML = `<div class="stamp ${kind}">${kind === 'ok' ? I.check : I.x}${esc(text)}</div>`;
   }
 }
 
@@ -275,6 +279,7 @@ async function fallback(text) {
 }
 const STARTERS = [['sprzedaz', 'Sprzedaję auto'], ['portfel', 'Zgubiłam portfel'], ['mama', 'Wykup recepty mamy'], ['sms', 'Sprawdź podejrzany SMS'], ['oc', 'Co z moim OC?'], ['dziecko', 'Rodzi się nam dziecko'], ['przeprowadzka', 'Przeprowadzam się']];
 const STARTER_ICON = { sprzedaz: I.car, portfel: I.wallet, mama: I.pill, sms: I.msg, oc: I.shield, dziecko: I.baby, przeprowadzka: I.home };
+const STARTER_TINT = { sprzedaz: 'warn', portfel: 'red', mama: 'trust', sms: 'red', oc: '', dziecko: 'pink', przeprowadzka: 'teal' };
 
 // ---------- navigation ----------
 function openTab(tab, view = null) {
@@ -287,14 +292,18 @@ function goLink(to, thread) {
   if (to === 'trace') return openTab('dane', { k: 'trace', id: (thread || S.cur).id });
   if (to === 'dane') { S.dataTab = 'zgody'; return openTab('dane'); }
   if (to === 'dane-log') { S.dataTab = 'log'; return openTab('dane'); }
+  if (to === 'sprawy') { S.dataTab = 'sprawy'; return openTab('dane'); }
+  if (to === 'start-todo') { const s = $('#todoSec'); if (s) $('#screen').scrollTo({ top: s.offsetTop - 8 }); return; }
   if (to === 'rules') return openTab(S.tab, { k: 'rules' });
   openTab(to);
 }
 
 function topbar(title, back) {
   const tb = $('#topbar');
-  if (S.tab === 'start' && !S.view) {
-    tb.innerHTML = `<div class="brandmark"><div class="logo">m</div><div><b>mObywatel</b><small>koncepcja: pod Twoją kontrolą</small></div></div>
+  const home = S.tab === 'start' && !S.view;
+  $('#phone').classList.toggle('dark-top', home);
+  if (home) {
+    tb.innerHTML = `<div class="brandmark"><div class="logo">m</div><div><b>mObywatel</b><small>pod Twoją kontrolą · koncepcja</small></div></div>
       <button class="iconbtn infobtn" id="infoBtn" aria-label="O koncepcji">${I.info}</button>
       <button class="avatar" id="avBtn" aria-label="Granice asystenta">AN</button>`;
   } else {
@@ -304,7 +313,8 @@ function topbar(title, back) {
   }
   const bb = $('#backBtn'); if (bb) bb.onclick = () => openView(null);
   const av = $('#avBtn'); if (av) av.onclick = () => openView({ k: 'rules' });
-  $('#infoBtn').onclick = () => sheet($('#about').innerHTML.replace(/<button class="reset"[^>]*>.*?<\/button>/, ''), true);
+  $('#infoBtn').onclick = () => sheet($('#about').innerHTML.replace(/<button class="reset"[^>]*>.*?<\/button>/, '')
+    .replace('<h1>', '<h1 class="about-h1">').replace('<h2>', '<h2 class="about-h2">'), true);
 }
 
 function render() {
@@ -327,25 +337,34 @@ function refreshBadges() { /* tabs re-render on open; nothing to badge for now *
 // ---------- screens ----------
 function viewStart() {
   const todo = [];
-  if (!S.carSold) todo.push(`<button class="row" data-run="oc"><div class="ic warn">${I.car}</div><div class="tx"><b>OC Toyoty kończy się za 6 dni</b><span>Wznowi się samo. Sprawdź, czy tego chcesz.</span></div>${I.chev}</button>`);
-  todo.push(`<button class="row" data-run="mama"><div class="ic trust">${I.pill}</div><div class="tx"><b>Recepty mamy czekają na wykup</b><span>Działasz jako pełnomocniczka Haliny Nowak</span></div>${I.chev}</button>`);
+  if (!S.carSold) todo.push(`<button class="todo" data-run="oc"><div class="ic warn">${I.car}</div><div class="tx"><b>OC Toyoty kończy się za 6 dni</b><span>Wznowi się samo. Sprawdź, czy tego chcesz.</span></div><span class="pill warn">29.10</span></button>`);
+  todo.push(`<button class="todo" data-run="mama"><div class="ic trust">${I.pill}</div><div class="tx"><b>Recepty mamy czekają na wykup</b><span>Działasz jako pełnomocniczka Haliny Nowak</span></div><span class="pill trust">2 leki</span></button>`);
   const active = S.consents.filter(c => !c.used && !c.revoked);
-  if (active.length) todo.push(`<button class="row" data-goto="dane"><div class="ic">${I.shield}</div><div class="tx"><b>${active.length} ${active.length === 1 ? 'firma ma' : 'firmy mają'} teraz Twoje dane</b><span>${esc(active[0].who)}, ${esc(active[0].until)}</span></div>${I.chev}</button>`);
+  if (active.length) todo.push(`<button class="todo" data-goto="dane"><div class="ic">${I.shield}</div><div class="tx"><b>${active.length} ${active.length === 1 ? 'firma ma' : 'firmy mają'} teraz Twoje dane</b><span>${esc(active[0].who)}, ${esc(active[0].until)}</span></div>${I.chev}</button>`);
   const recent = S.threads.slice(0, 3);
-  return `<div class="hello"><h2>Dobry wieczór, Anno</h2><p>Masz ${todo.length} ${todo.length === 1 ? 'sprawę' : 'sprawy'} do załatwienia.</p></div>
-    <button class="askbox" id="askBox">${I.spark}<span>Powiedz, co chcesz załatwić…</span></button>
-    <div class="sec">Do załatwienia</div><div class="list">${todo.join('')}</div>
+  const reads = S.access.filter(a => a.kind !== 'me').length;
+  return `<section class="hero">
+      <div class="date">Piątek, 23 października</div>
+      <h2>Dobry wieczór, Anno</h2>
+      <div class="stats">
+        <button class="stat" data-goto="start-todo"><b>${todo.length}</b><span>${todo.length === 1 ? 'sprawa' : 'sprawy'} do załatwienia</span></button>
+        <button class="stat" data-goto="dane"><b>${active.length}</b><span>aktywne zgody na Twoje dane</span></button>
+        <button class="stat" data-goto="dane-log"><b>${reads}</b><span>odczyty przez instytucje</span></button>
+      </div>
+      <button class="askbox" id="askBox"><span class="sp">${I.spark}</span><span class="q">Powiedz, co chcesz załatwić…</span><span class="mic">${I.mic}</span></button>
+    </section>
+    <div class="sec" id="todoSec">Do załatwienia</div>${todo.join('')}
     <div class="sec">Co się dzieje w Twoim życiu?</div>
     <div class="events">
-      <button class="event" data-run="sprzedaz"><div class="em">${I.car}</div><b>Sprzedaję auto</b></button>
-      <button class="event" data-run="portfel"><div class="em">${I.wallet}</div><b>Zgubiłam portfel</b></button>
-      <button class="event" data-run="dziecko"><div class="em">${I.baby}</div><b>Rodzi się dziecko</b></button>
-      <button class="event" data-run="przeprowadzka"><div class="em">${I.home}</div><b>Przeprowadzam się</b></button>
+      <button class="event ev-car" data-run="sprzedaz"><div class="em">${I.car}</div><div><b>Sprzedaję auto</b><small>umowa, starosta, OC</small></div></button>
+      <button class="event ev-wallet" data-run="portfel"><div class="em">${I.wallet}</div><div><b>Zgubiłam portfel</b><small>zastrzeżenie w minutę</small></div></button>
+      <button class="event ev-baby" data-run="dziecko"><div class="em">${I.baby}</div><div><b>Rodzi się dziecko</b><small>PESEL, 800 plus, meldunek</small></div></button>
+      <button class="event ev-home" data-run="przeprowadzka"><div class="em">${I.home}</div><div><b>Przeprowadzam się</b><small>jeden adres, wszędzie</small></div></button>
     </div>
-    <div class="list mt"><button class="row" data-run="sms"><div class="ic red">${I.msg}</div><div class="tx"><b>Dostałaś podejrzanego SMS-a?</b><span>Asystent sprawdzi go bez wykonywania poleceń z treści</span></div>${I.chev}</button></div>
-    <div class="sec">Dokumenty</div>
+    <button class="scam" data-run="sms"><div class="ic">${I.msg}</div><div style="flex:1"><b>Podejrzany SMS albo mail?</b><span>Sprawdzę go, nie wykonując żadnych poleceń z treści</span></div><span class="go">Sprawdź</span></button>
+    <div class="sec">Dokumenty <small data-goto="dokumenty" style="cursor:pointer">Wszystkie</small></div>
     <div class="docstrip">${Object.entries(DOCS).map(([k, d]) => `<button class="minidoc ${d.g}" data-doc="${k}"><b>${esc(d.name)}</b><span>${esc(d.short())}</span></button>`).join('')}</div>
-    ${recent.length ? `<div class="sec">Ostatnie sprawy</div><div class="list">${recent.map(threadRow).join('')}</div>` : ''}`;
+    ${recent.length ? `<div class="sec">Ostatnie sprawy <small data-goto="sprawy" style="cursor:pointer">Wszystkie</small></div><div class="list">${recent.map(threadRow).join('')}</div>` : ''}`;
 }
 function threadRow(t) {
   const cls = { 'zakończona': 'ok', 'anulowana': 'red', 'w toku': 'warn', 'odłożona': 'grey', 'zaplanowana': 'grey' }[t.status] || 'grey';
@@ -371,19 +390,26 @@ const DOCS = {
   pojazd: { name: 'Mój pojazd', g: 'g-car', short: () => S.carSold ? 'zbyty 23.10' : me.car.plate + ', OC do ' + me.car.oc, share: false,
     rows: [['Pojazd', me.car.name], ['Rejestracja', me.car.plate], ['VIN', me.car.vin], ['OC do', me.car.oc], ['Badanie do', me.car.inspection]] }
 };
+function docCard(k, tag) {
+  const d = DOCS[k];
+  const name = k === 'pojazd' ? me.car.name : me.first + ' ' + me.last;
+  const sub = k === 'pojazd' ? (S.carSold ? 'zgłoszono zbycie 23.10.2026' : me.car.plate) : k === 'dowod' ? 'PESEL ' + me.pesel : 'kategoria ' + me.dl.cat;
+  const meta = tag === 'button' ? `<div class="dmeta">${d.rows.slice(-2).map(r => `<div>${esc(r[0])}<b>${esc(r[1])}</b></div>`).join('')}</div>` : '';
+  return `<${tag} class="doc ${d.g}" ${tag === 'button' ? `data-doc="${k}"` : ''}>
+    <div class="dhead"><span class="dtype">${esc(d.name)}</span><span class="chip"></span></div>
+    <div class="dbody">${k === 'dowod' ? '<div class="photo"></div>' : ''}<div><div class="dname">${esc(name)}</div><div class="dsub">${esc(sub)}</div></div></div>
+    ${meta}</${tag}>`;
+}
 function viewDocs() {
-  return Object.entries(DOCS).map(([k, d]) => `<button class="doc ${d.g}" data-doc="${k}">
-    <div style="display:flex;justify-content:space-between;gap:12px"><div><div class="dtype">${esc(d.name)}</div><div class="dname">${k === 'pojazd' ? esc(me.car.name) : esc(me.first + ' ' + me.last).toUpperCase()}</div></div>${k === 'dowod' ? '<div class="photo"></div>' : ''}</div>
-    <div class="dmeta">${d.rows.slice(-2).map(r => `<div>${esc(r[0])}<b>${esc(r[1])}</b></div>`).join('')}</div></button>`).join('')
+  return Object.keys(DOCS).map(k => docCard(k, 'button')).join('')
     + `<p class="muted" style="margin:6px 4px">Dokumenty i dane są fikcyjne. Wygląd nie odwzorowuje prawdziwych dokumentów.</p>`;
 }
 function bindDocs() { bindCommon($('#screen')); }
 function viewDoc(id) {
   const d = DOCS[id];
-  return `<div class="doc ${d.g}"><div class="dtype">${esc(d.name)}</div><div class="dname">${id === 'pojazd' ? esc(me.car.name) : esc(me.first + ' ' + me.last).toUpperCase()}</div>
-      ${S.carSold && id === 'pojazd' ? '<div class="dmeta"><div>Status<b>zgłoszono zbycie 23.10.2026</b></div></div>' : ''}</div>
+  return `${docCard(id, 'div')}
     <div class="card"><dl class="kv">${d.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>
-    ${d.share ? `<button class="btn mt" id="shareBtn">Pokaż komuś</button><p class="muted mt" style="text-align:center">Wybierzesz, co dokładnie zobaczy druga osoba.</p>` : ''}
+    ${d.share ? `<button class="btn mt" id="shareBtn">${I.eye}Pokaż komuś</button><p class="muted mt" style="text-align:center">Wybierzesz, co dokładnie zobaczy druga osoba.</p>` : ''}
     <div class="list mt"><button class="row" data-goto="dane-log"><div class="ic">${I.shield}</div><div class="tx"><b>Kto czytał ten dokument</b><span>Dziennik odczytów z rejestrów</span></div>${I.chev}</button></div>`;
 }
 const SHARE = {
@@ -429,9 +455,9 @@ function showQr(o) {
 function renderChat() {
   const sc = $('#screen');
   if (!chatEl.children.length) {
-    sc.innerHTML = `<div class="hello"><h2>W czym pomóc?</h2><p>Sprawdzam rejestry sama. Wszystko, co coś zmienia, potwierdzasz na karcie podpisem.</p></div>
-      <div class="starters">${STARTERS.map(s => `<button class="starter" data-run="${s[0]}">${STARTER_ICON[s[0]]}${esc(s[1])}</button>`).join('')}</div>
-      <p class="muted mt" style="margin:14px 4px">Asystent w prototypie działa na przygotowanych scenariuszach. Możesz też wpisać własne pytanie poniżej.</p>`;
+    sc.innerHTML = `<div class="intro"><div class="orb">${I.spark}</div><h2>W czym pomóc, Anno?</h2><p>Rejestry sprawdzam sama. Wszystko, co coś zmienia, potwierdzasz podpisem na karcie.</p></div>
+      <div class="starters">${STARTERS.map(s => `<button class="starter" data-run="${s[0]}"><span class="ic ${STARTER_TINT[s[0]]}">${STARTER_ICON[s[0]]}</span>${esc(s[1])}</button>`).join('')}</div>
+      <p class="muted" style="margin:16px 6px 0;text-align:center">W prototypie asystent działa na przygotowanych scenariuszach. Możesz też wpisać własne pytanie.</p>`;
     sc.querySelectorAll('[data-run]').forEach(b => b.onclick = () => { if (!S.busy) { sc.replaceChildren(chatEl); play(b.dataset.run); } });
     return;
   }
@@ -444,9 +470,9 @@ function viewData() {
   let body = '';
   if (S.dataTab === 'zgody') {
     body = `<p class="muted" style="margin:8px 4px 12px">Kto ma teraz Twoje dane i po co. Zgodę cofasz jednym ruchem, bez podpisu.</p>`
-      + S.consents.map(c => `<div class="consent ${c.revoked ? 'revoked' : ''}"><div class="top"><b>${esc(c.who)}</b>${c.revoked ? '<span class="pill red">cofnięta</span>' : c.used ? '<span class="pill grey">wykorzystana</span>' : '<span class="pill ok">aktywna</span>'}</div>
+      + S.consents.map(c => `<div class="consent ${c.revoked ? 'revoked' : ''} ${c.fresh ? 'fresh' : ''}"><div class="ic ${CONSENT_TINT[c.icon] || ''}">${CONSENT_ICON[c.icon] || I.shield}</div><div class="body"><div class="top"><b>${esc(c.who)}</b>${c.revoked ? '<span class="pill red">cofnięta</span>' : c.used ? '<span class="pill grey">wykorzystana</span>' : '<span class="pill ok">aktywna</span>'}</div>
         <div class="what">${esc(c.what)}</div><div class="meta"><span>${esc(c.why)} · ${esc(c.revoked ? 'cofnięta dziś, ' + c.revoked : c.until)}</span>
-        ${!c.used && !c.revoked ? `<button class="revoke" data-rev="${c.id}">Cofnij</button>` : ''}</div></div>`).join('');
+        ${!c.used && !c.revoked ? `<button class="revoke" data-rev="${c.id}">Cofnij</button>` : ''}</div></div></div>`).join('');
   } else if (S.dataTab === 'log') {
     const ic = { me: ['', I.user], office: ['warn', I.office], police: ['red', I.police], company: ['trust', I.bank] };
     body = `<p class="muted" style="margin:8px 4px 12px">Każdy odczyt Twoich danych z rejestrów państwowych, z podstawą prawną. Dziennik prowadzą rejestry, nie aplikacja.</p>
@@ -456,8 +482,13 @@ function viewData() {
     body = `<p class="muted" style="margin:8px 4px 12px">Każda sprawa z asystentem zostawia ślad: od Twojej prośby, przez każdy odczyt i regułę, do decyzji urzędu.</p>`
       + (S.threads.length ? `<div class="list">${S.threads.map(threadRow).join('')}</div>` : `<div class="card muted">Jeszcze nic tu nie ma. Załatw coś z asystentem, na przykład <button class="link" data-run="sprzedaz" style="margin-top:8px">Sprzedaję auto</button></div>`);
   }
-  return `<div class="list" style="margin:2px 0 10px"><button class="row" data-goto="rules"><div class="ic trust">${I.lock}</div><div class="tx"><b>Granice asystenta</b><span>Czego asystent nigdy nie zrobi bez Ciebie</span></div>${I.chev}</button></div>${seg}${body}`;
+  const active = S.consents.filter(c => !c.used && !c.revoked).length;
+  const inst = new Set(S.access.filter(a => a.kind !== 'me').map(a => a.who)).size;
+  return `<div class="kpis"><div class="kpi ok"><b>${active}</b><span>aktywne zgody</span></div><div class="kpi warn"><b>${inst}</b><span>${inst === 1 ? 'instytucja czytała' : (inst % 10 >= 2 && inst % 10 <= 4 && (inst % 100 < 12 || inst % 100 > 14)) ? 'instytucje czytały' : 'instytucji czytało'} dane</span></div><div class="kpi trust"><b>${S.threads.length}</b><span>ślady spraw</span></div></div>
+    <div class="list" style="margin:0 0 10px"><button class="row" data-goto="rules"><div class="ic trust">${I.lock}</div><div class="tx"><b>Granice asystenta</b><span>Czego asystent nigdy nie zrobi bez Ciebie</span></div>${I.chev}</button></div>${seg}${body}`;
 }
+const CONSENT_ICON = { car: I.car, med: I.pill, bank: I.bank };
+const CONSENT_TINT = { car: 'warn', med: 'pink', bank: 'trust' };
 function bindData() {
   const sc = $('#screen'); bindCommon(sc);
   sc.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => { S.dataTab = b.dataset.seg; render(); });
@@ -475,7 +506,7 @@ function bindData() {
 function viewTrace(id) {
   const t = S.threads.find(x => x.id === id);
   if (!t) return '<p class="muted">Nie ma takiej sprawy.</p>';
-  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:17px">${esc(t.title)}</b><span class="pill ${t.status === 'zakończona' ? 'ok' : t.status === 'anulowana' ? 'red' : 'warn'}">${t.status}</span></div>
+  return `<div class="tcard"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:19px">${esc(t.title)}</b><span class="pill ${t.status === 'zakończona' ? 'ok' : t.status === 'anulowana' ? 'red' : 'warn'}">${t.status}</span></div>
       <p class="muted" style="margin-top:4px">Sprawa ${t.id} · rozpoczęta ${t.started} · ${kroki(t.events.length)}</p>
       <div class="legend"><span class="pill">Ty</span><span class="pill ok">rejestry i urzędy</span><span class="pill trust">reguły w kodzie</span></div></div>
     <div class="tl mt">${t.events.map(e => `<div class="ev ${e.kind}"><div class="eh"><b>${KIND[e.kind]}</b><span>#${e.n}${e.parent ? ' ← #' + e.parent : ''} · ${e.t}</span></div><p>${esc(e.text)}</p><div class="who">${esc(e.who)}</div></div>`).join('')}</div>
@@ -483,7 +514,7 @@ function viewTrace(id) {
 }
 
 function viewRules() {
-  return `<p class="muted" style="margin:6px 4px 14px">Zasady z kłódką są zapisane w kodzie aplikacji i sprawdza je serwer. Asystent ich nie zmieni, nawet jeśli ktoś go o to poprosi w rozmowie, SMS-ie czy mailu.</p>
+  return `<div class="rulehero"><div class="ic">${I.lock}</div><div><b>Tego nie zmieni żadna rozmowa</b><p>Zasady z kłódką są zapisane w kodzie aplikacji i sprawdza je serwer. Asystent ich nie zmieni, nawet gdy ktoś go o to poprosi w rozmowie, SMS-ie czy mailu.</p></div></div>
     <div class="sec">Zawsze, bez wyjątków</div>
     <div class="list rules">${S.rules.map((r, i) => r.locked ? `<div class="row"><div class="tx"><b>${esc(r.t)}</b><span>${esc(r.d)}</span></div><span class="lock">${I.lock}w kodzie</span></div>` : '').join('')}</div>
     <div class="sec">Twoje ustawienia</div>
@@ -494,10 +525,10 @@ function bindRules() {
 }
 
 function viewPeople() {
-  const card = (p, mine) => `<button class="card" style="width:100%;text-align:left;margin-bottom:10px" ${mine ? `data-person="${p.id}"` : ''}>
+  const card = (p, mine) => `<${mine ? 'button' : 'div'} class="card pcard" ${mine ? `data-person="${p.id}"` : ''}>
     <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b style="font-size:16px">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
     <div class="scope">${p.scope.map(s => `<span class="pill ${mine ? 'trust' : ''}">${esc(s)}</span>`).join('')}</div>
-    <div class="muted mt">Ważne: ${esc(p.until)}${mine && p.log[0] ? `<br>Ostatnio: ${esc(p.log[0].what)} (${esc(p.log[0].when)})` : ''}</div></button>`;
+    <div class="pfoot"><span>Ważne: ${esc(p.until)}</span>${mine && p.log[0] ? `<span>Ostatnio ${esc(p.log[0].when)}</span>` : ''}</div></${mine ? 'button' : 'div'}>`;
   return `<div class="sec">Działasz w ich imieniu</div>${S.forOthers.map(p => card(p, true)).join('')}
     <p class="muted" style="margin:-2px 4px 6px">Każdy Twój krok w ich sprawach widzą od razu w swoich aplikacjach.</p>
     <div class="sec">Działają w Twoim imieniu</div>${D.forMe.map(p => card(p, false)).join('')}

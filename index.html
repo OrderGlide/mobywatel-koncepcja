@@ -3,56 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14284b">
+<meta name="theme-color" content="#0b1f44">
 <meta name="description" content="Koncepcja na mObywatel Challenge: asystent, który załatwia sprawy za Ciebie, ale nigdy bez Ciebie. Prototyp z fikcyjnymi danymi.">
 <title>mObywatel pod Twoją kontrolą</title>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=4">
 </head>
 <body>
 <div class="stage">
-  <div class="phone" id="phone">
-    <div class="statusbar"><span id="clock">21:14</span><span class="sb-right"><i class="sig"></i><i class="bat"></i></span></div>
-    <header class="topbar" id="topbar"></header>
-    <main class="screen" id="screen"></main>
-    <div class="composer" id="composer" hidden>
-      <input id="ask" type="text" autocomplete="off" placeholder="Napisz, co chcesz załatwić">
-      <button id="askSend" class="send" aria-label="Wyślij"><svg viewBox="0 0 24 24"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button>
+  <div class="device">
+    <div class="phone" id="phone">
+      <div class="island"></div>
+      <div class="statusbar"><span id="clock">21:14</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="bat"></i></span></div>
+      <header class="topbar" id="topbar"></header>
+      <main class="screen" id="screen"></main>
+      <div class="composer" id="composer" hidden>
+        <input id="ask" type="text" autocomplete="off" placeholder="Napisz, co chcesz załatwić">
+        <button id="askSend" class="send" aria-label="Wyślij"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+      </div>
+      <nav class="tabbar" id="tabbar">
+        <button data-tab="start"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></span>Start</button>
+        <button data-tab="dokumenty"><span class="ti"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M7 10h5M7 13.5h8"/></svg></span>Dokumenty</button>
+        <button data-tab="asystent"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg></span>Asystent</button>
+        <button data-tab="dane"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>Moje dane</button>
+        <button data-tab="bliscy"><span class="ti"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.8 6 5.5"/></svg></span>Bliscy</button>
+      </nav>
+      <div class="homebar"></div>
+      <div class="sheet-wrap" id="sheetWrap" hidden><div class="sheet" id="sheet"></div></div>
+      <div class="toast" id="toast" hidden></div>
     </div>
-    <nav class="tabbar" id="tabbar">
-      <button data-tab="start"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Start</button>
-      <button data-tab="dokumenty"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3zM6 10h5M6 13h8"/></svg>Dokumenty</button>
-      <button data-tab="asystent"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Asystent</button>
-      <button data-tab="dane"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Moje dane</button>
-      <button data-tab="bliscy"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.8 6 5.5"/></svg>Bliscy</button>
-    </nav>
-    <div class="sheet-wrap" id="sheetWrap" hidden><div class="sheet" id="sheet"></div></div>
-    <div class="toast" id="toast" hidden></div>
   </div>
 
   <aside class="about" id="about">
-    <p class="kicker">Koncepcja na mObywatel Challenge</p>
-    <h1>mObywatel pod Twoją kontrolą</h1>
+    <div class="badge"><span class="dot"></span>Koncepcja na mObywatel Challenge</div>
+    <h1>mObywatel <span class="grad">pod Twoją kontrolą</span></h1>
     <p class="lead">Asystent, który załatwia sprawy za Ciebie, ale nigdy bez Ciebie. Każdą decyzję widać, każde udostępnienie danych da się cofnąć, a granic asystenta nie zmieni żadna rozmowa.</p>
-    <ol class="pillars">
-      <li><b>Podpisujesz to, co widzisz.</b> Każda czynność to karta z dokładną treścią, podpisywana kluczem urządzenia.</li>
-      <li><b>Granice w kodzie, nie w rozmowie.</b> Treść SMS-ów i maili to dla asystenta dane, nigdy polecenia.</li>
-      <li><b>Ślad każdej sprawy.</b> Od Twojej prośby, przez każdy odczyt z rejestru, do decyzji urzędu.</li>
-      <li><b>Moje dane: kto, kiedy, po co.</b> Dziennik odczytów i zgody cofane jednym ruchem.</li>
-      <li><b>Życie, nie urzędy.</b> Zdarzenia życiowe i sprawy bliskich zamiast listy usług.</li>
-    </ol>
-    <h2>Co sprawdzić</h2>
-    <ul class="try" id="tryList">
-      <li><button data-run="sprzedaz">Sprzedaję auto</button> jedna sprawa zamiast czterech</li>
-      <li><button data-run="sms">Podejrzany SMS</button> próba oszukania asystenta</li>
-      <li><button data-run="mama">Recepty mamy</button> działanie w czyimś imieniu</li>
-      <li><button data-go="dane">Moje dane</button> kto czytał Twoje dane</li>
-      <li><button data-go="dowod">Pokaż dowód</button> tylko to, co trzeba</li>
-    </ul>
-    <p class="fine">Osoby i dane są fikcyjne. To nie jest aplikacja mObywatel ani usługa administracji publicznej. Prototyp działa bez sieci, kont i śledzenia.</p>
-    <button class="reset" id="resetBtn">Zacznij od nowa</button>
+
+    <div class="pillars">
+      <div class="pl"><span class="pn">01</span><div><b>Podpisujesz to, co widzisz</b><p>Każda czynność to karta z dokładną treścią, podpisywana kluczem urządzenia.</p></div></div>
+      <div class="pl"><span class="pn">02</span><div><b>Granice w kodzie, nie w rozmowie</b><p>Treść SMS-ów i maili to dla asystenta dane, nigdy polecenia.</p></div></div>
+      <div class="pl"><span class="pn">03</span><div><b>Ślad każdej sprawy</b><p>Od Twojej prośby, przez każdy odczyt z rejestru, do decyzji urzędu.</p></div></div>
+      <div class="pl"><span class="pn">04</span><div><b>Moje dane: kto, kiedy, po co</b><p>Dziennik odczytów i zgody cofane jednym ruchem.</p></div></div>
+      <div class="pl"><span class="pn">05</span><div><b>Życie, nie urzędy</b><p>Zdarzenia życiowe i sprawy bliskich zamiast listy usług.</p></div></div>
+    </div>
+
+    <h2>Wypróbuj</h2>
+    <div class="trycards" id="tryList">
+      <button data-run="sprzedaz"><b>Sprzedaję auto</b><span>Jedna sprawa zamiast czterech</span></button>
+      <button data-run="sms"><b>Podejrzany SMS</b><span>Próba oszukania asystenta</span></button>
+      <button data-run="mama"><b>Recepty mamy</b><span>Działanie w czyimś imieniu</span></button>
+      <button data-go="dane"><b>Moje dane</b><span>Kto czytał Twoje dane</span></button>
+      <button data-go="dowod"><b>Pokaż dowód</b><span>Tylko to, co trzeba</span></button>
+      <button data-run="portfel"><b>Zgubiony portfel</b><span>Zastrzeżenie w minutę</span></button>
+    </div>
+
+    <p class="fine">Osoby i dane są fikcyjne. To nie jest aplikacja mObywatel ani usługa administracji publicznej. Prototyp działa bez sieci, kont i śledzenia. <button class="reset" id="resetBtn">Zacznij od nowa</button></p>
   </aside>
 </div>
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script src="data.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

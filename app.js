@@ -43,7 +43,16 @@ const I = {
   money: svg('<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9v.5M17.5 14.5v.5"/>'),
   heart: svg('<path d="M12 20s-7.5-4.5-7.5-10A4.5 4.5 0 0112 7.5 4.5 4.5 0 0119.5 10c0 5.5-7.5 10-7.5 10z"/>'),
   vote: svg('<path d="M5 12l4 4 10-10M4 20h16"/>'),
-  send: svg('<path d="M4 12l16-8-6 16-3-7z"/>')
+  send: svg('<path d="M4 12l16-8-6 16-3-7z"/>'),
+  bus: svg('<rect x="5" y="3.5" width="14" height="14" rx="3"/><path d="M5 11h14M8.5 14.5h.5M15 14.5h.5M7 17.5V20M17 17.5V20M9 6.5h6"/>'),
+  tree: svg('<path d="M9 3l5 8h-2.5l4 6H4.5l4-6H6zM9 17v4"/><circle cx="17.5" cy="15" r="2.2"/><path d="M17.5 21s-3.5-3-3.5-6a3.5 3.5 0 017 0c0 3-3.5 6-3.5 6z"/>'),
+  plane: svg('<path d="M10.5 13.5L4 11l1-1.5 7 .5 4.5-5c1-1 2.5-1.2 3-.7s.3 2-.7 3l-5 4.5.5 7L13 20l-2.5-6.5L7 17l.5 2.5-1 1L5 17.5 2.5 16l1-1L6 15.5z"/>'),
+  plug: svg('<path d="M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 01-11 0zM12 16.5V21"/>'),
+  train: svg('<rect x="5" y="3" width="14" height="14" rx="4"/><path d="M5 10h14M9 13.5h.5M14.5 13.5h.5M8 17l-2 4M16 17l2 4"/>'),
+  edit: svg('<path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/>'),
+  help: svg('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 015 .5c0 1.7-2.5 2-2.5 3.5M12 17v.5"/>'),
+  qr: svg('<path d="M4 8V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V8M20 16v2.5a1.5 1.5 0 01-1.5 1.5H16M8 20H5.5A1.5 1.5 0 014 18.5V16M8 8h3v3H8zM13 13h3v3h-3zM13 8h3M8 13v3"/>')
 };
 
 const S = {
@@ -106,7 +115,7 @@ function tr(kind, who, text) {
 // ---------- chat rendering ----------
 function add(html, cls) {
   const sc = $('#screen');
-  if (S.tab === 'asystent' && !S.view && chatEl.parentNode !== sc) sc.replaceChildren(chatEl);
+  if (inChat() && chatEl.parentNode !== sc) sc.replaceChildren(chatEl);
   const el = document.createElement('div');
   if (cls) el.className = cls;
   el.innerHTML = html;
@@ -114,7 +123,8 @@ function add(html, cls) {
   scrollChat();
   return el;
 }
-function scrollChat() { if (S.tab === 'asystent' && !S.view) { const sc = $('#screen'); requestAnimationFrame(() => { sc.scrollTop = sc.scrollHeight; }); } }
+const inChat = () => !!(S.view && S.view.k === 'chat');
+function scrollChat() { if (inChat()) { const sc = $('#screen'); requestAnimationFrame(() => { sc.scrollTop = sc.scrollHeight; }); } }
 function line(icon, src, text, color) {
   const el = add(`${icon}<span><b>${esc(src)}</b> · ${esc(text)}</span>`, 'read');
   if (color) el.querySelector('svg').style.color = color;
@@ -186,7 +196,7 @@ async function play(id, opts = {}) {
 }
 
 function startCase(id) {
-  openTab('asystent');
+  openTab('start', { k: 'chat' });
   if (S.busy) return;
   chatEl.querySelectorAll('.chips:not(.used)').forEach(c => c.classList.add('used'));
   play(id);
@@ -321,48 +331,59 @@ function openTab(tab, view = null) {
 }
 function openView(view) { S.view = view; render(); }
 function goLink(to, thread) {
-  if (to === 'trace') return openTab('dane', { k: 'trace', id: (thread || S.cur).id });
-  if (to === 'dane') { S.dataTab = 'zgody'; return openTab('dane'); }
-  if (to === 'dane-log') { S.dataTab = 'log'; return openTab('dane'); }
-  if (to === 'sprawy') { S.dataTab = 'sprawy'; return openTab('dane'); }
-  if (to === 'rules') return openTab(S.tab, { k: 'rules' });
+  if (to === 'trace') return openTab('wiecej', { k: 'trace', id: (thread || S.cur).id });
+  if (to === 'dane') { S.dataTab = 'zgody'; return openTab('wiecej', { k: 'dane' }); }
+  if (to === 'dane-log') { S.dataTab = 'log'; return openTab('wiecej', { k: 'dane' }); }
+  if (to === 'sprawy') { S.dataTab = 'sprawy'; return openTab('wiecej', { k: 'dane' }); }
+  if (to === 'bliscy') return openTab('wiecej', { k: 'bliscy' });
+  if (to === 'rules') return openTab('wiecej', { k: 'rules' });
+  if (to === 'asystent') return openTab('start', { k: 'chat' });
   openTab(to);
 }
 
-// Root tabs get avatar + bell, sub-pages get a back arrow and a centred title.
-function topbar(title, back, sub) {
+// Header variants copied from the app: avatar + bell (Start), logo + bell (Dokumenty), centred title elsewhere.
+function topbar(mode, title, opts = {}) {
   const tb = $('#topbar');
   const info = `<button class="iconbtn infobtn" id="infoBtn" aria-label="O koncepcji">${I.info}</button>`;
-  if (!back && !title) {
+  const bell = `<button class="iconbtn" id="bellBtn" aria-label="Powiadomienia">${I.bell}</button>`;
+  if (mode === 'home' || mode === 'logo') {
     tb.className = 'topbar root';
-    tb.innerHTML = `<button class="avatar" id="avBtn" aria-label="Granice asystenta">AN</button>
-      <div class="tb-right">${info}<button class="iconbtn" id="bellBtn" aria-label="Powiadomienia">${I.bell}</button></div>`;
+    tb.innerHTML = `${mode === 'home' ? '<button class="avatar" id="avBtn" aria-label="Twój profil">AN</button>' : '<span class="logo-sq">m</span>'}<div class="tb-right">${info}${bell}</div>`;
   } else {
     tb.className = 'topbar';
-    tb.innerHTML = `${back ? `<button class="iconbtn" id="backBtn" aria-label="Wstecz">${I.back}</button>` : '<span></span>'}
-      <h1>${esc(title)}${sub ? `<span class="sub">${esc(sub)}</span>` : ''}</h1><div class="tb-right" style="justify-content:flex-end">${info}</div>`;
+    tb.innerHTML = `${opts.back ? `<button class="iconbtn" id="backBtn" aria-label="Wstecz">${I.back}</button>` : '<span></span>'}
+      <h1>${esc(title)}${opts.sub ? `<span class="sub">${esc(opts.sub)}</span>` : ''}</h1>
+      <div class="tb-right" style="justify-content:flex-end">${info}${opts.right || ''}</div>`;
   }
-  const bb = $('#backBtn'); if (bb) bb.onclick = () => openView(null);
-  const av = $('#avBtn'); if (av) av.onclick = () => openView({ k: 'rules' });
+  const bb = $('#backBtn'); if (bb) bb.onclick = () => openView(S.view && S.view.from ? S.view.from : null);
+  const av = $('#avBtn'); if (av) av.onclick = () => openTab('wiecej');
   const bl = $('#bellBtn'); if (bl) bl.onclick = () => toast('Nie masz nowych powiadomień.');
-  $('#infoBtn').onclick = () => sheet($('#about').innerHTML.replace(/<button class="reset"[^>]*>.*?<\/button>/, '')
+  const ed = $('#editBtn'); if (ed) ed.onclick = () => toast('Tu ułożysz kolejność usług, jak w obecnej aplikacji.');
+  $('#infoBtn').onclick = showAbout;
+}
+function showAbout() {
+  sheet($('#about').innerHTML.replace(/<button class="reset"[^>]*>.*?<\/button>/, '')
     .replace('<h1>', '<h1 class="about-h1">').replace('<h2>', '<h2 class="about-h2">'), true);
 }
 
 function render() {
   const sc = $('#screen');
-  $('#composer').hidden = !(S.tab === 'asystent' && !S.view);
   const v = S.view;
-  if (v && v.k === 'rules') { topbar('Granice asystenta', true); sc.innerHTML = viewRules(); bindRules(); }
-  else if (v && v.k === 'trace') { topbar('Ślad sprawy', true); sc.innerHTML = viewTrace(v.id); }
-  else if (v && v.k === 'doc') { topbar(DOCS[v.id].name, true); sc.innerHTML = viewDoc(v.id); bindDoc(v.id); }
-  else if (v && v.k === 'person') { topbar('Pełnomocnictwo', true); sc.innerHTML = viewPerson(v.id); bindCommon(sc); bindPerson(); }
-  else if (v && v.k === 'event') { topbar(EVENTS[v.id].label, true); sc.innerHTML = viewEvent(v.id); bindCommon(sc); }
-  else if (S.tab === 'start') { topbar(); sc.innerHTML = viewStart(); bindStart(); }
-  else if (S.tab === 'dokumenty') { topbar(); sc.innerHTML = viewDocs(); bindCommon(sc); }
-  else if (S.tab === 'asystent') { topbar('Asystent', false, 'Granice ustala kod, nie rozmowa'); renderChat(); return; }
-  else if (S.tab === 'dane') { topbar(); sc.innerHTML = viewData(); bindData(); }
-  else if (S.tab === 'bliscy') { topbar(); sc.innerHTML = viewPeople(); bindPeople(); }
+  $('#composer').hidden = !inChat();
+  if (v && v.k === 'chat') { topbar('center', 'Asystent', { back: true, sub: 'Granice ustala kod, nie rozmowa' }); renderChat(); return; }
+  if (v && v.k === 'rules') { topbar('center', 'Granice asystenta', { back: true }); sc.innerHTML = viewRules(); bindRules(); }
+  else if (v && v.k === 'trace') { topbar('center', 'Ślad sprawy', { back: true }); sc.innerHTML = viewTrace(v.id); }
+  else if (v && v.k === 'doc') { topbar('center', DOCS[v.id].name, { back: true }); sc.innerHTML = viewDoc(v.id); bindDoc(v.id); }
+  else if (v && v.k === 'person') { topbar('center', 'Pełnomocnictwo', { back: true }); sc.innerHTML = viewPerson(v.id); bindCommon(sc); bindPerson(); }
+  else if (v && v.k === 'event') { topbar('center', EVENTS[v.id].label, { back: true }); sc.innerHTML = viewEvent(v.id); bindCommon(sc); }
+  else if (v && v.k === 'svc') { topbar('center', SERVICES[v.id].label, { back: true }); sc.innerHTML = viewService(v.id); bindService(v.id); }
+  else if (v && v.k === 'dane') { topbar('center', 'Moje dane', { back: true }); sc.innerHTML = viewData(); bindData(); }
+  else if (v && v.k === 'bliscy') { topbar('center', 'Pełnomocnictwa', { back: true }); sc.innerHTML = viewPeople(); bindPeople(); }
+  else if (S.tab === 'start') { topbar('home'); sc.innerHTML = viewStart(); bindStart(); }
+  else if (S.tab === 'dokumenty') { topbar('logo'); sc.innerHTML = viewDocs(); bindDocs(); }
+  else if (S.tab === 'uslugi') { topbar('center', 'Usługi', { right: `<button class="iconbtn" id="editBtn" aria-label="Edytuj">${I.edit}</button>` }); sc.innerHTML = viewServices(); bindCommon(sc); }
+  else if (S.tab === 'qr') { topbar('center', 'Kod QR'); sc.innerHTML = viewQr(); bindQr(); }
+  else if (S.tab === 'wiecej') { topbar('center', 'Więcej'); sc.innerHTML = viewMore(); bindMore(); }
   sc.scrollTop = 0;
 }
 
@@ -370,8 +391,9 @@ function bindCommon(root) {
   root.querySelectorAll('[data-run]').forEach(b => b.onclick = () => startCase(b.dataset.run));
   root.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => goLink(b.dataset.goto));
   root.querySelectorAll('[data-doc]').forEach(b => b.onclick = () => openTab('dokumenty', { k: 'doc', id: b.dataset.doc }));
-  root.querySelectorAll('[data-trace]').forEach(b => b.onclick = () => openTab('dane', { k: 'trace', id: b.dataset.trace }));
-  root.querySelectorAll('[data-event]').forEach(b => b.onclick = () => openTab('start', { k: 'event', id: b.dataset.event }));
+  root.querySelectorAll('[data-trace]').forEach(b => b.onclick = () => openTab('wiecej', { k: 'trace', id: b.dataset.trace, from: S.view && S.view.k === 'dane' ? S.view : null }));
+  root.querySelectorAll('[data-event]').forEach(b => b.onclick = () => openTab(S.tab, { k: 'event', id: b.dataset.event }));
+  root.querySelectorAll('[data-svc]').forEach(b => b.onclick = () => openTab(S.tab, { k: 'svc', id: b.dataset.svc }));
 }
 
 const statusCls = s => ({ 'zakończona': 'ok', 'anulowana': 'red', 'w toku': 'warn', 'odłożona': '', 'zaplanowana': 'navy' }[s] || '');
@@ -379,39 +401,50 @@ function threadRow(t) {
   return `<button class="lrow" data-trace="${t.id}"><span class="li">${I.trace}</span><span class="lt"><b>${esc(t.title)}</b><small>${t.id} · ${t.started} · ${kroki(t.events.length)}</small></span><span class="status ${statusCls(t.status)}"><i></i>${t.status}</span></button>`;
 }
 
-// ---------- start ----------
+// ---------- data for screens ----------
 const me = D.me;
 const DOCS = {
-  dowod: { name: 'mDowód', color: '#1f5fd1', icon: I.id, share: true,
+  dowod: { name: 'mDowód', color: '#dc143c', icon: I.id, share: true,
     rows: [['Imię i nazwisko', me.first + ' ' + me.last], ['PESEL', me.pesel], ['Data urodzenia', me.born], ['Numer', me.idNo], ['Ważny do', me.idValid]] },
+  kdr: { name: 'Karta Dużej Rodziny', color: '#13806d', icon: I.users, share: false,
+    rows: [['Imię i nazwisko', me.first + ' ' + me.last], ['Numer karty', '2024/118 554'], ['Ważna', 'bezterminowo']] },
   prawojazdy: { name: 'mPrawo jazdy', color: '#4b3bb4', icon: I.car, share: true,
     rows: [['Kategorie', me.dl.cat], ['Numer blankietu', me.dl.no], ['Ważne do', me.dl.valid], ['Punkty karne', String(me.dl.points)]] },
   pojazd: { name: 'Moje pojazdy', color: '#e8761a', icon: I.car, share: false,
     rows: [['Pojazd', me.car.name], ['Rejestracja', me.car.plate], ['VIN', me.car.vin], ['OC do', me.car.oc], ['Badanie do', me.car.inspection]] }
 };
+// Existing services from the current app, shown as they are today.
+const SERVICES = {
+  punkty: { label: 'Punkty karne', color: '#0b4a96', icon: I.police, lead: 'Sprawdź, ile masz punktów karnych i kiedy wygasną.', kind: 'points' },
+  autobus: { label: 'Bezpieczny autobus', color: '#43a047', icon: I.bus, lead: 'Znajdziesz tu najważniejsze informacje o pojeździe, na przykład czy ma ważne badania techniczne i polisę OC.', kind: 'plate', cta: 'Dalej' },
+  srodowisko: { label: 'Naruszenie środowiskowe', color: '#2e6b3a', icon: I.tree, title: 'Zgłoś zdarzenie, które może źle wpłynąć na środowisko', kind: 'steps', cta: 'Zgłoś naruszenie',
+    steps: [[I.qr, 'Wybierz rodzaj naruszenia'], [I.edit, 'Opisz naruszenie'], [I.eye, 'Dodaj zdjęcie'], [I.home, 'Wskaż miejsce naruszenia'], [I.user, 'Wpisz swoje dane'], [I.send, 'Wyślij zgłoszenie']] },
+  granica: { label: 'Polak za granicą', color: '#ef7d1a', icon: I.plane, lead: 'Sprawdź informacje o kraju, do którego jedziesz, i zgłoś swoją podróż.', kind: 'info', cta: 'Zgłoś podróż' },
+  prad: { label: 'Dodatek elektryczny', color: '#1e7ae0', icon: I.plug, lead: 'Złóż wniosek o dodatek elektryczny i sprawdź jego status.', kind: 'info', cta: 'Złóż wniosek' },
+  bilkom: { label: 'Bilkom', color: '#d0457f', icon: I.train, lead: 'Kup bilet kolejowy i trzymaj go w aplikacji.', kind: 'info', cta: 'Kup bilet' }
+};
+
+// ---------- start ----------
 function viewStart() {
-  const active = S.consents.filter(c => !c.used && !c.revoked);
   const todo = [];
   if (!S.carSold) todo.push(`<div class="pay"><span class="status red"><i></i>Kończy się 29.10</span><b>OC Toyoty Corolla PO 4R521</b>
     <p>Ubezpieczyciel wznowi polisę sam. Sprawdź, czy tego chcesz.</p><button class="btn" data-run="oc">Sprawdź z asystentem</button></div>`);
   todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
     <p>Atorwastatyna 20 mg i Metformina 500 mg</p><button class="btn" data-run="mama">Wykup z asystentem</button></div>`);
-  return `<h1 class="ptitle">Dobry wieczór, Anno</h1>
-    <button class="ask" id="askBox"><span class="orb">${I.spark}</span><span class="q"><b>Zapytaj asystenta</b><small>Powiedz, co chcesz załatwić</small></span><span class="mic">${I.mic}</span></button>
-    <div class="sh"><h2>Do załatwienia</h2></div>${todo.join('')}
-    <div class="sh"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
-    <div class="hscroll">${Object.entries(DOCS).map(([k, d]) => `<button class="dcard" data-doc="${k}"><div class="dtop wave-${k}"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`).join('')}</div>
-    <div class="sh"><h2>Sprawy życiowe</h2></div>
+  return `<div class="sh" style="margin-top:6px"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
+    <div class="bigdocs">${['dowod', 'kdr', 'prawojazdy', 'pojazd'].map(k => { const d = DOCS[k]; return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>
+    <div class="sh"><h2>Usługi</h2><button class="pillbtn" data-goto="uslugi">Wszystkie</button></div>
+    <div class="grid3">${Object.entries(SERVICES).map(([k, s]) => `<button class="svc" data-svc="${k}"><span class="tile" style="color:${s.color}">${s.icon}</span>${esc(s.label)}</button>`).join('')}</div>
+    <div class="sh"><h2>Sprawy życiowe<span class="newtag">Nowe</span></h2></div>
     <div class="grid3">${Object.entries(EVENTS).map(([k, e]) => `<button class="svc" data-event="${k}"><span class="tile" style="color:${e.color}">${e.icon}</span>${esc(e.label)}</button>`).join('')}</div>
-    <div class="sh"><h2>Twoje dane</h2></div>
-    <button class="lrow" data-goto="dane"><span class="li">${I.shield}</span><span class="lt"><b>${active.length} ${plural(active.length, 'firma ma', 'firmy mają', 'firm ma')} teraz Twoje dane</b><small>Sprawdź, komu i po co je udostępniłaś</small></span>${I.chev}</button>
-    <button class="lrow" data-goto="dane-log"><span class="li">${I.eye}</span><span class="lt"><b>Kto czytał Twoje dane</b><small>Ostatnio: Urząd Skarbowy Poznań-Wilda, 21.10</small></span>${I.chev}</button>
-    ${S.threads.length ? `<div class="sh"><h2>Ostatnie sprawy</h2><button class="pillbtn" data-goto="sprawy">Wszystkie</button></div>${S.threads.slice(0, 3).map(threadRow).join('')}` : ''}`;
+    <div class="sh"><h2>Do załatwienia<span class="newtag">Nowe</span></h2></div>${todo.join('')}
+    ${S.threads.length ? `<div class="sh"><h2>Ostatnie sprawy</h2><button class="pillbtn" data-goto="sprawy">Wszystkie</button></div>${S.threads.slice(0, 3).map(threadRow).join('')}` : ''}
+    <div class="askbar"><button id="askBox"><span class="sp">${I.spark}</span><span class="q">Zapytaj asystenta, co chcesz załatwić</span><span class="mic">${I.mic}</span></button></div>`;
 }
 function bindStart() {
   const sc = $('#screen'); bindCommon(sc);
-  $('#askBox').onclick = () => { openTab('asystent'); setTimeout(() => $('#ask').focus(), 50); };
-  $('#addDoc').onclick = () => toast('W prototypie są trzy dokumenty. Dodawanie kolejnych działa jak w obecnej aplikacji.');
+  $('#askBox').onclick = () => { openTab('start', { k: 'chat' }); setTimeout(() => $('#ask').focus(), 50); };
+  $('#addDoc').onclick = () => toast('W prototypie są cztery dokumenty. Dodawanie kolejnych działa jak w obecnej aplikacji.');
 }
 
 function viewEvent(id) {
@@ -422,22 +455,66 @@ function viewEvent(id) {
     <div class="cta"><button class="btn" data-run="${id}">${esc(e.cta)}</button></div>`;
 }
 
+// ---------- existing services ----------
+function viewServices() {
+  const row = (attr, color, icon, label) => `<button class="lrow" ${attr}><span class="li" style="color:${color}">${icon}</span><span class="lt"><b>${esc(label)}</b></span>${I.chev}</button>`;
+  return `
+    ${row('data-goto="asystent"', '#0b4a96', I.spark, 'Asystent')}
+    <div class="secl">Sprawy życiowe</div>
+    ${Object.entries(EVENTS).map(([k, e]) => row(`data-event="${k}"`, e.color, e.icon, e.label)).join('')}
+    <div class="secl">Usługi</div>
+    ${Object.entries(SERVICES).map(([k, s]) => row(`data-svc="${k}"`, s.color, s.icon, s.label)).join('')}`;
+}
+function viewService(id) {
+  const s = SERVICES[id];
+  let body = '';
+  if (s.kind === 'plate') body = `<div class="card mt" style="margin-top:22px"><label style="font-size:14px;font-weight:600">Numer rejestracyjny</label>
+      <input id="plate" placeholder="Wpisz numer" style="width:100%;margin-top:8px;border:1.5px solid #cfd5df;border-radius:10px;padding:12px 14px;font-size:15px;outline:none"></div>
+      <div id="plateOut"></div>`;
+  else if (s.kind === 'steps') body = `<ul class="steps">${s.steps.map(x => `<li><span style="color:${s.color};display:grid">${x[0]}</span>${esc(x[1])}</li>`).join('')}</ul>`;
+  else if (s.kind === 'points') body = `<div class="pay mt" style="margin-top:22px;text-align:center"><span class="status ok"><i></i>Stan na 23.10.2026</span>
+      <b style="font-size:44px;margin-top:10px">${me.dl.points}</b><p>punkty karne z 24 możliwych</p><p class="muted mt">Najbliższe 2 punkty wygasną 12.03.2027.</p></div>`;
+  return `<div class="hero-ic" style="background:${s.color}">${s.icon}</div>
+    <h2 class="stitle">${esc(s.title || s.label)}</h2>${s.lead ? `<p class="slead">${esc(s.lead)}</p>` : ''}${body}
+    ${s.cta ? `<div class="cta"><button class="btn" id="svcGo">${esc(s.cta)}</button></div>` : ''}`;
+}
+function bindService(id) {
+  const b = $('#svcGo'); if (!b) return;
+  b.onclick = () => {
+    if (id === 'autobus') {
+      const p = ($('#plate').value || '').trim().toUpperCase();
+      if (!p) { $('#plateOut').innerHTML = '<p class="muted mt" style="color:var(--red)">Wpisz numer rejestracyjny.</p>'; return; }
+      $('#plateOut').innerHTML = `<div class="pay mt"><span class="status ok"><i></i>Można jechać</span><b>Autobus ${esc(p)}</b>
+        <p class="meta">Badanie techniczne: <strong>ważne do 14.02.2027</strong><br>Polisa OC: <strong>ważna do 30.06.2027</strong></p></div>`;
+      return;
+    }
+    toast('Ta usługa działa jak w obecnej aplikacji. Prototyp pokazuje nowe funkcje.');
+  };
+}
+
 // ---------- documents ----------
 function viewDocs() {
-  return `<h1 class="ptitle">Dokumenty</h1>
-    <div class="wallet">${Object.entries(DOCS).map(([k, d]) => `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
-      <span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span></button>`).join('')}</div>
-    <p class="muted mt" style="margin:14px 4px 0">Dane są fikcyjne. Wygląd dokumentów nie odwzorowuje prawdziwych wzorów.</p>`;
+  return `<h1 class="ptitle" style="margin-bottom:4px">Dokumenty</h1>
+    <div class="linkbtns"><button id="customize">Dostosuj</button><button id="addDoc2">Dodaj</button></div>
+    <div class="wallet">${['dowod', 'kdr', 'prawojazdy', 'pojazd'].map(k => { const d = DOCS[k]; return `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
+      <span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span></button>`; }).join('')}</div>`;
+}
+function bindDocs() {
+  bindCommon($('#screen'));
+  $('#customize').onclick = () => toast('Tu ułożysz kolejność dokumentów, jak w obecnej aplikacji.');
+  $('#addDoc2').onclick = () => toast('W prototypie są cztery dokumenty.');
 }
 function viewDoc(id) {
   const d = DOCS[id];
   let top;
-  if (id === 'dowod') top = `<div class="idtop"><div class="photo"></div><div class="fields">
+  if (id === 'dowod') top = `<div class="idtop"><div class="idleft"><div class="photo"></div><div class="flag"></div></div><div class="fields">
       <div><b>${esc(me.first)}</b><span>Imię (imiona)</span></div><div><b>${esc(me.last)}</b><span>Nazwisko</span></div>
-      <div><b>${esc(me.born)}</b><span>Data urodzenia</span></div><div><b>${esc(me.pesel)}</b><span>Numer PESEL</span></div></div></div>`;
+      <div><b>Polskie</b><span>Obywatelstwo</span></div><div><b>${esc(me.born)}</b><span>Data urodzenia</span></div><div><b>${esc(me.pesel)}</b><span>Numer PESEL</span></div></div></div>`;
   else if (id === 'prawojazdy') top = `<div class="idtop pj"><div class="photo"></div><div class="fields">
       <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>${esc(me.dl.cat)}</b><span>Kategorie</span></div>
       <div><b>${esc(me.dl.valid)}</b><span>Ważne do</span></div><div><b>${me.dl.points} pkt</b><span>Punkty karne</span></div></div></div>`;
+  else if (id === 'kdr') top = `<div class="idtop" style="background:repeating-radial-gradient(ellipse at 100% 100%,rgba(255,255,255,.6) 0 1px,transparent 1.5px 9px),linear-gradient(160deg,#e2f6f0,#b9e6d9)"><div class="photo"></div><div class="fields">
+      <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>2024/118 554</b><span>Numer karty</span></div><div><b>Bezterminowo</b><span>Ważna</span></div></div></div>`;
   else top = `<div class="idtop car"><div class="fields">
       <div><b>${esc(me.car.name)}</b><span>Pojazd</span></div><div><b>${esc(me.car.plate)}</b><span>Numer rejestracyjny</span></div>
       <div><b>${esc(me.car.oc)}</b><span>OC ważne do</span></div><div><b>${esc(me.car.inspection)}</b><span>Badanie techniczne do</span></div></div></div>`;
@@ -445,11 +522,10 @@ function viewDoc(id) {
     ? `<div class="valid" style="color:var(--warn)"><span class="vc" style="border-color:var(--warn)">${I.info}</span>Zgłoszono zbycie 23.10.2026</div>`
     : `<div class="valid"><span class="vc">${I.check}</span>Dokument ważny</div>`;
   return `<p class="muted center" style="margin:2px 0 10px">Czas: ${now()}:07 23.10.2026</p>
-    <div class="idcard">${top}${valid}</div>
-    <div class="mt"></div>
-    ${d.share ? `<button class="lrow" id="shareBtn"><span class="li">${I.scan}</span><span class="lt"><b>Pokaż komuś</b><small>Tylko to, co trzeba, np. „mam 18 lat”</small></span>${I.chev}</button>` : ''}
+    <div class="idcard">${top}${valid}</div><div class="mt"></div>
+    ${d.share ? `<button class="lrow" id="shareBtn"><span class="li">${I.scan}</span><span class="lt"><b>Potwierdź swoje dane</b><small>Pokaż tylko to, co trzeba, np. „mam 18 lat”</small></span>${I.chev}</button>` : ''}
     <button class="lrow" id="detailsBtn"><span class="li">${I.id}</span><span class="lt"><b>Dane dokumentu</b></span>${I.chev}</button>
-    <button class="lrow" data-goto="dane-log"><span class="li">${I.eye}</span><span class="lt"><b>Kto czytał ten dokument</b></span>${I.chev}</button>`;
+    <button class="lrow" data-goto="dane-log"><span class="li">${I.eye}</span><span class="lt"><b>Kto czytał ten dokument</b><small>Nowość: dziennik odczytów z rejestrów</small></span>${I.chev}</button>`;
 }
 const SHARE = {
   dowod: [['Tylko: mam ukończone 18 lat', 'np. zakup w sklepie. Bez imienia, PESEL-u i daty urodzenia.', ['Pełnoletność: tak', 'Zdjęcie']],
@@ -458,26 +534,26 @@ const SHARE = {
   prawojazdy: [['Uprawnienia do prowadzenia', 'np. wypożyczalnia, kontrola', ['Imię i nazwisko', 'Kategorie', 'Ważność', 'Zdjęcie']],
                ['Pełne dane z punktami karnymi', 'np. pracodawca zatrudniający kierowców', ['Imię i nazwisko', 'Kategorie', 'Ważność', 'Punkty karne', 'Zdjęcie']]]
 };
+function shareFlow(id) {
+  let pick = 0;
+  const opts = SHARE[id];
+  const draw = () => {
+    sheet(`<h3>Co chcesz pokazać?</h3><p class="sub">Druga osoba zobaczy tylko zaznaczony zakres. Nic więcej nie da się odczytać z kodu.</p><div class="mt">
+      ${opts.map((o, i) => `<button class="choice ${i === pick ? 'on' : ''}" data-i="${i}"><div class="radio"></div><div><b>${esc(o[0])}</b><span>${esc(o[1])}</span></div></button>`).join('')}</div>
+      <button class="btn mt" id="showQr">Pokaż kod</button>`);
+    document.querySelectorAll('.choice').forEach(c => c.onclick = () => { pick = +c.dataset.i; draw(); });
+    $('#showQr').onclick = () => {
+      const o = opts[pick];
+      passkey('Pokazanie danych: ' + o[0], 'UD-' + fnv(o[0]).slice(0, 4).toUpperCase(), fnv(o.join()) + fnv(now()), () => showQr(o));
+    };
+  };
+  draw();
+}
 function bindDoc(id) {
   bindCommon($('#screen'));
   $('#detailsBtn').onclick = () => sheet(`<h3>Dane dokumentu</h3><div class="mt"><dl class="kv">${DOCS[id].rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>
     <button class="btn outline mt" onclick="closeSheet()">Zamknij</button>`);
-  const b = $('#shareBtn'); if (!b) return;
-  b.onclick = () => {
-    let pick = 0;
-    const opts = SHARE[id];
-    const draw = () => {
-      sheet(`<h3>Co chcesz pokazać?</h3><p class="sub">Druga osoba zobaczy tylko zaznaczony zakres. Nic więcej nie da się odczytać z kodu.</p><div class="mt">
-        ${opts.map((o, i) => `<button class="choice ${i === pick ? 'on' : ''}" data-i="${i}"><div class="radio"></div><div><b>${esc(o[0])}</b><span>${esc(o[1])}</span></div></button>`).join('')}</div>
-        <button class="btn mt" id="showQr">Pokaż kod</button>`);
-      document.querySelectorAll('.choice').forEach(c => c.onclick = () => { pick = +c.dataset.i; draw(); });
-      $('#showQr').onclick = () => {
-        const o = opts[pick];
-        passkey('Pokazanie danych: ' + o[0], 'UD-' + fnv(o[0]).slice(0, 4).toUpperCase(), fnv(o.join()) + fnv(now()), () => showQr(o));
-      };
-    };
-    draw();
-  };
+  const b = $('#shareBtn'); if (b) b.onclick = () => shareFlow(id);
 }
 function showQr(o) {
   let left = 120;
@@ -493,6 +569,52 @@ function showQr(o) {
   $('#qrClose').onclick = () => { clearInterval(t); closeSheet(); };
 }
 
+// ---------- QR tab ----------
+function viewQr() {
+  return `<div class="viewfinder"><i></i><i></i><i></i><i></i><span>Skieruj aparat na kod QR</span></div>
+    <button class="btn mt" id="scanBtn">${I.scan}Skanuj kod QR</button>
+    <div class="secl">Pokaż swój kod</div>
+    <div class="lgroup">
+      <button class="lrow" id="qrId"><span class="li">${I.id}</span><span class="lt"><b>Potwierdź swoje dane</b><small>Wybierz, co dokładnie zobaczy druga osoba</small></span>${I.chev}</button>
+      <button class="lrow" id="qrDl"><span class="li">${I.car}</span><span class="lt"><b>Uprawnienia do prowadzenia</b><small>Dla wypożyczalni albo przy kontroli</small></span>${I.chev}</button>
+    </div>`;
+}
+function bindQr() {
+  $('#scanBtn').onclick = () => toast('W prototypie aparat nie jest używany. Spróbuj „Potwierdź swoje dane”.');
+  $('#qrId').onclick = () => shareFlow('dowod');
+  $('#qrDl').onclick = () => shareFlow('prawojazdy');
+}
+
+// ---------- More tab ----------
+function viewMore() {
+  const active = S.consents.filter(c => !c.used && !c.revoked).length;
+  const r = (id, color, icon, title, sub) => `<button class="lrow" id="${id}"><span class="li" style="color:${color}">${icon}</span><span class="lt"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</span>${I.chev}</button>`;
+  return `<div class="pay" style="display:flex;gap:14px;align-items:center"><span class="avatar" style="width:52px;height:52px;font-size:17px">AN</span><div><b style="margin:0">${esc(me.first + ' ' + me.last)}</b><p style="margin-top:2px">PESEL ${esc(me.pesel)}</p></div></div>
+    <div class="secl">Twoje dane i bezpieczeństwo<span class="newtag">Nowe</span></div>
+    <div class="lgroup">
+      ${r('mData', '#0b4a96', I.shield, 'Moje dane', `${active} ${plural(active, 'aktywna zgoda', 'aktywne zgody', 'aktywnych zgód')}, dziennik odczytów`)}
+      ${r('mTrace', '#5a45c8', I.trace, 'Ślady spraw', `${S.threads.length} ${plural(S.threads.length, 'sprawa', 'sprawy', 'spraw')} z asystentem`)}
+      ${r('mRules', '#5a45c8', I.lock, 'Granice asystenta', 'Czego asystent nigdy nie zrobi bez Ciebie')}
+      ${r('mPeople', '#2e8b3e', I.users, 'Pełnomocnictwa', 'Mama, syn i osoby, które działają w Twoim imieniu')}
+    </div>
+    <div class="secl">Aplikacja</div>
+    <div class="lgroup">
+      ${r('mSet', '#4b5563', I.gear, 'Ustawienia')}
+      ${r('mHelp', '#4b5563', I.help, 'Pomoc')}
+      ${r('mAbout', '#dc143c', I.info, 'O koncepcji', 'mObywatel Challenge')}
+      ${r('mIntro', '#4b5563', I.spark, 'Pokaż wprowadzenie')}
+    </div>`;
+}
+function bindMore() {
+  $('#mData').onclick = () => { S.dataTab = 'zgody'; openView({ k: 'dane' }); };
+  $('#mTrace').onclick = () => { S.dataTab = 'sprawy'; openView({ k: 'dane' }); };
+  $('#mRules').onclick = () => openView({ k: 'rules' });
+  $('#mPeople').onclick = () => openView({ k: 'bliscy' });
+  $('#mSet').onclick = $('#mHelp').onclick = () => toast('Ta część działa jak w obecnej aplikacji.');
+  $('#mAbout').onclick = showAbout;
+  $('#mIntro').onclick = () => onboarding(true);
+}
+
 // ---------- assistant ----------
 function renderChat() {
   const sc = $('#screen');
@@ -500,7 +622,7 @@ function renderChat() {
     sc.innerHTML = `<div class="hero-ic soft" style="width:96px;height:96px;margin-top:10px">${I.spark}</div>
       <h2 class="stitle">W czym pomóc, Anno?</h2>
       <p class="slead">Rejestry sprawdzam sama. Wszystko, co coś zmienia, potwierdzasz podpisem na karcie.</p>
-      <div class="mt" style="margin-top:20px">${STARTERS.map(s => `<button class="lrow" data-start="${s[0]}"><span class="li" style="color:${STARTER_COLOR[s[0]]}">${STARTER_ICON[s[0]]}</span><span class="lt"><b>${esc(s[1])}</b></span>${I.chev}</button>`).join('')}</div>
+      <div style="margin-top:20px">${STARTERS.map(s => `<button class="lrow" data-start="${s[0]}"><span class="li" style="color:${STARTER_COLOR[s[0]]}">${STARTER_ICON[s[0]]}</span><span class="lt"><b>${esc(s[1])}</b></span>${I.chev}</button>`).join('')}</div>
       <p class="muted center" style="margin:6px 6px 0">W prototypie asystent działa na przygotowanych scenariuszach. Możesz też wpisać własne pytanie.</p>`;
     sc.querySelectorAll('[data-start]').forEach(b => b.onclick = () => { if (!S.busy) { sc.replaceChildren(chatEl); play(b.dataset.start); } });
     return;
@@ -510,7 +632,6 @@ function renderChat() {
 }
 
 // ---------- my data ----------
-const CONSENT_ICON = { car: I.car, med: I.pill, bank: I.bank };
 function viewData() {
   const seg = `<div class="seg"><button data-seg="zgody" class="${S.dataTab === 'zgody' ? 'on' : ''}">Zgody</button><button data-seg="log" class="${S.dataTab === 'log' ? 'on' : ''}">Kto czytał</button><button data-seg="sprawy" class="${S.dataTab === 'sprawy' ? 'on' : ''}">Ślady spraw</button></div>`;
   let body = '';
@@ -530,9 +651,7 @@ function viewData() {
     body = `<p class="muted" style="margin:0 4px 12px">Każda sprawa z asystentem zostawia ślad: od Twojej prośby, przez każdy odczyt i regułę, do decyzji urzędu.</p>`
       + (S.threads.length ? S.threads.map(threadRow).join('') : `<div class="card center"><p class="muted">Jeszcze nic tu nie ma. Załatw coś z asystentem.</p><button class="btn mt" data-run="sprzedaz">Sprzedaję auto</button></div>`);
   }
-  return `<h1 class="ptitle">Moje dane</h1>
-    <button class="lrow" data-goto="rules"><span class="li">${I.lock}</span><span class="lt"><b>Granice asystenta</b><small>Czego asystent nigdy nie zrobi bez Ciebie</small></span>${I.chev}</button>
-    <div class="mt"></div>${seg}${body}`;
+  return `${seg}${body}`;
 }
 function bindData() {
   const sc = $('#screen'); bindCommon(sc);
@@ -573,18 +692,17 @@ function bindRules() {
 // ---------- people ----------
 function viewPeople() {
   const card = (p, mine) => `<${mine ? 'button' : 'div'} class="pay" style="display:block;width:100%;text-align:left" ${mine ? `data-person="${p.id}"` : ''}>
-    <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
+    <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b style="margin:0">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
     <div class="scope">${p.scope.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
     <div class="pfoot"><span>Ważne: ${esc(p.until)}</span>${mine && p.log[0] ? `<span>Ostatnio ${esc(p.log[0].when)}</span>` : ''}</div></${mine ? 'button' : 'div'}>`;
-  return `<h1 class="ptitle">Bliscy</h1>
-    <div class="sh" style="margin-top:4px"><h2>Działasz w ich imieniu</h2></div>${S.forOthers.map(p => card(p, true)).join('')}
+  return `<div class="sh" style="margin-top:4px"><h2>Działasz w ich imieniu</h2></div>${S.forOthers.map(p => card(p, true)).join('')}
     <p class="muted" style="margin:-2px 4px 6px">Każdy Twój krok w ich sprawach widzą od razu w swoich aplikacjach.</p>
     <div class="sh"><h2>Działają w Twoim imieniu</h2></div>${D.forMe.map(p => card(p, false)).join('')}
     <button class="btn outline mt" id="addDel">${I.plus}Dodaj pełnomocnictwo</button>`;
 }
 function bindPeople() {
   const sc = $('#screen');
-  sc.querySelectorAll('[data-person]').forEach(b => b.onclick = () => openView({ k: 'person', id: b.dataset.person }));
+  sc.querySelectorAll('[data-person]').forEach(b => b.onclick = () => openView({ k: 'person', id: b.dataset.person, from: { k: 'bliscy' } }));
   $('#addDel').onclick = () => sheet(`<h3>Nowe pełnomocnictwo</h3><p class="sub">Bez urzędu i bez notariusza dla spraw codziennych.</p>
     <ul class="steps" style="margin-top:18px">
       <li><span style="color:var(--navy);display:grid">${I.scan}</span>Zeskanuj kod osoby w jej mObywatelu</li>
@@ -597,7 +715,7 @@ function bindPeople() {
 function viewPerson(id) {
   const p = S.forOthers.find(x => x.id === id);
   const first = p.name.split(' ')[0];
-  return `<div class="pay"><div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div><b>${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div></div>
+  return `<div class="pay"><div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div><b style="margin:0">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div></div>
       <div class="scope">${p.scope.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div><div class="pfoot"><span>Ważne: ${esc(p.until)}</span></div></div>
     <div class="sh"><h2>Co zrobiłaś w imieniu tej osoby</h2></div>
     ${p.log.map(l => `<div class="lrow"><span class="li" style="color:var(--ok)">${I.done}</span><span class="lt"><b>${esc(l.what)}</b><small>${esc(l.when)} · ${esc(first)} dostała powiadomienie</small></span></div>`).join('')}
@@ -607,6 +725,36 @@ function viewPerson(id) {
 }
 function bindPerson() {
   $('#endDel').onclick = () => toast('W prototypie pełnomocnictwo zostaje. W prawdziwej aplikacji obie strony mogą je zakończyć w każdej chwili.');
+}
+
+// ---------- onboarding (same pattern as the app's first run) ----------
+const ONB = [
+  ['Asystent, który pyta', 'Załatwia sprawy za Ciebie, ale każdą czynność podpisujesz sama, na karcie z dokładną treścią.',
+    '<circle cx="130" cy="130" r="110" fill="#eaf1fc" stroke="none"/><rect x="88" y="52" width="84" height="150" rx="14" fill="#fff" stroke="#0b4a96"/><rect x="100" y="78" width="60" height="10" rx="5" fill="#dde8f8" stroke="none"/><rect x="100" y="96" width="44" height="10" rx="5" fill="#dde8f8" stroke="none"/><rect x="100" y="122" width="60" height="40" rx="8" fill="#fff" stroke="#0b4a96"/><path d="M110 142l8 8 14-16" stroke="#2e8b3e" stroke-width="3"/><circle cx="178" cy="70" r="22" fill="#0b4a96" stroke="none"/><path d="M178 58l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#fff" stroke="none"/>'],
+  ['Twoje dane pod kontrolą', 'Widzisz, kto i po co czytał Twoje dane. Każdą zgodę cofasz jednym ruchem.',
+    '<circle cx="130" cy="130" r="110" fill="#eaf1fc" stroke="none"/><path d="M130 50l58 22v44c0 38-25 60-58 70-33-10-58-32-58-70V72z" fill="#fff" stroke="#0b4a96" stroke-width="3"/><path d="M106 124l16 16 32-34" stroke="#2e8b3e" stroke-width="5"/><circle cx="190" cy="186" r="20" fill="#dc143c" stroke="none"/><path d="M182 186h16" stroke="#fff" stroke-width="3"/>'],
+  ['Życie, nie urzędy', 'Sprzedaż auta, zgubiony portfel czy recepty mamy załatwisz w jednym miejscu.',
+    '<circle cx="130" cy="130" r="110" fill="#eaf1fc" stroke="none"/><rect x="58" y="70" width="64" height="64" rx="16" fill="#fff" stroke="#e8761a"/><rect x="138" y="70" width="64" height="64" rx="16" fill="#fff" stroke="#d92d45"/><rect x="58" y="148" width="64" height="64" rx="16" fill="#fff" stroke="#2e8b3e"/><rect x="138" y="148" width="64" height="64" rx="16" fill="#fff" stroke="#0f957f"/><path d="M76 108v-10l5-11h18l5 11v10zM82 100h1M97 100h1" stroke="#e8761a"/><path d="M156 92h24a4 4 0 014 4v18a4 4 0 01-4 4h-24zM176 105h4" stroke="#d92d45"/><rect x="78" y="170" width="24" height="12" rx="6" transform="rotate(-35 90 176)" stroke="#2e8b3e"/><path d="M156 186l14-12 14 12M160 184v14h20v-14" stroke="#0f957f"/>']
+];
+function onboarding(force) {
+  let seen = false;
+  try { seen = localStorage.getItem('mob-onb') === '1'; } catch (e) { /* storage blocked: show it */ }
+  if (seen && !force) return;
+  let i = 0;
+  const el = $('#onb');
+  const close = () => { el.hidden = true; try { localStorage.setItem('mob-onb', '1'); } catch (e) { /* ignore */ } };
+  const draw = () => {
+    const [t, p, art] = ONB[i];
+    el.innerHTML = `<div class="brand"><span class="logo-sq" style="width:30px;height:30px;font-size:16px">m</span>mObywatel</div>
+      <div class="ill"><svg viewBox="0 0 260 260">${art}</svg></div>
+      <h2>${esc(t)}</h2><p>${esc(p)}</p>
+      <div class="dots">${ONB.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>
+      <button class="btn" id="onbNext">${i === ONB.length - 1 ? 'Zaczynamy' : 'Dalej'}</button><button class="btn outline" id="onbSkip">Pomiń</button>`;
+    $('#onbNext').onclick = () => { if (i < ONB.length - 1) { i++; draw(); } else close(); };
+    $('#onbSkip').onclick = close;
+  };
+  el.hidden = false;
+  draw();
 }
 
 // ---------- sheet & toast ----------
@@ -623,14 +771,16 @@ function toast(text) { const t = $('#toast'); t.textContent = text; t.hidden = f
 
 // ---------- wiring ----------
 function sideAction(b) {
+  $('#onb').hidden = true;
   if (b.dataset.run) return startCase(b.dataset.run);
-  if (b.dataset.go === 'dane') { S.dataTab = 'log'; return openTab('dane'); }
+  if (b.dataset.go === 'dane') return goLink('dane-log');
   if (b.dataset.go === 'dowod') return openTab('dokumenty', { k: 'doc', id: 'dowod' });
 }
 document.querySelectorAll('.tabbar button').forEach(b => b.onclick = () => openTab(b.dataset.tab));
 document.querySelectorAll('#tryList button').forEach(b => b.onclick = () => sideAction(b));
-$('#resetBtn').onclick = () => location.reload();
+$('#resetBtn').onclick = () => { try { localStorage.removeItem('mob-onb'); } catch (e) { /* ignore */ } location.reload(); };
 $('#askSend').onclick = () => ask($('#ask').value);
 $('#ask').addEventListener('keydown', e => { if (e.key === 'Enter') ask($('#ask').value); });
 $('#clock').textContent = now();
 openTab('start');
+if (!FAST) onboarding(false);

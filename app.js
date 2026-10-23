@@ -4,38 +4,46 @@ const D = window.DATA, SCEN = window.SCEN;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
-const sleep = ms => new Promise(r => setTimeout(r, FAST ? 0 : ms));
 const FAST = /[?&]fast\b/.test(location.search);
+const sleep = ms => new Promise(r => setTimeout(r, FAST ? 0 : ms));
+const svg = d => `<svg viewBox="0 0 24 24">${d}</svg>`;
 
 const I = {
-  chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
-  back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
-  check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-  done: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
-  bell: '<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 21h4"/></svg>',
-  lock: '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
-  warn: '<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18v.5"/></svg>',
-  car: '<svg viewBox="0 0 24 24"><path d="M4 16v-4l2-5h12l2 5v4zM4 16v2h3v-2M17 16v2h3v-2M7.5 13h.5M16 13h.5"/></svg>',
-  pill: '<svg viewBox="0 0 24 24"><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.5 8.5l5 7"/></svg>',
-  bank: '<svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5zM5 10v7M10 10v7M14 10v7M19 10v7M3 20h18"/></svg>',
-  id: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h3.5M14.5 13.5h3.5"/></svg>',
-  user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/></svg>',
-  office: '<svg viewBox="0 0 24 24"><path d="M4 21V7l8-4 8 4v14M9 21v-5h6v5M8 10h.5M12 10h.5M16 10h.5"/></svg>',
-  shield: '<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
-  baby: '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M10 9h.3M14 9h.3M10.5 11.3c.9.6 2.1.6 3 0M7 20c.8-2.3 2.8-4 5-4s4.2 1.7 5 4"/></svg>',
-  home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 9.5V20h5v-5h4v5h5V9.5"/></svg>',
-  wallet: '<svg viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H4zM4 7l11-3v3M15 13.5h2"/></svg>',
-  msg: '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M12 8v3.5M12 13.6v.4"/></svg>',
-  trace: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 8v8M8 6.5c5 .5 8 2.5 8.5 4M8 17.5c5-.5 8-2.5 8.5-4"/></svg>',
-  finger: '<svg viewBox="0 0 24 24"><path d="M7 11a5 5 0 0110 0v2M12 11v4c0 2-.8 3.6-2 5M9.5 11.5v2.5c0 1.5-.5 2.8-1.3 3.8M14.5 12v3c0 2.2-.6 4-1.6 5.5M17 15.5c0 1.4-.3 2.7-.8 3.8M4.8 15c.3-.9.4-1.9.4-3a6.8 6.8 0 0113.6 0"/></svg>',
-  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
-  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-  spark: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>',
-  police: '<svg viewBox="0 0 24 24"><path d="M12 3l8 3-1 4H5L4 6zM6 10v3a6 6 0 0012 0v-3"/></svg>',
-  users: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.8 6 5.5"/></svg>',
-  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-  mic: '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg>',
-  eye: '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+  chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>',
+  back: svg('<path d="M20 12H5M11 5l-7 7 7 7"/>'),
+  check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  done: svg('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>'),
+  x: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+  bell: svg('<path d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 21h4"/>'),
+  lock: svg('<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/>'),
+  warn: svg('<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>'),
+  car: svg('<path d="M4 16v-4l2-5h12l2 5v4zM4 16v2.5h3V16M17 16v2.5h3V16M7.5 12.5h.5M16 12.5h.5"/>'),
+  pill: svg('<rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.5 8.5l5 7"/>'),
+  bank: svg('<path d="M3 9l9-5 9 5zM5 10v7M10 10v7M14 10v7M19 10v7M3 20h18"/>'),
+  id: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h3.5M14.5 13.5h3.5"/>'),
+  user: svg('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5"/>'),
+  users: svg('<circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.8 6 5.5"/>'),
+  office: svg('<path d="M4 21V7l8-4 8 4v14M9 21v-5h6v5M8 10h.5M12 10h.5M16 10h.5"/>'),
+  shield: svg('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+  baby: svg('<circle cx="12" cy="9" r="5"/><path d="M10 9h.3M14 9h.3M10.5 11.3c.9.6 2.1.6 3 0M7 20c.8-2.3 2.8-4 5-4s4.2 1.7 5 4"/>'),
+  home: svg('<path d="M3 11l9-7 9 7M5 9.5V20h5v-5h4v5h5V9.5"/>'),
+  wallet: svg('<path d="M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H4zM4 7l11-3v3M15 13.5h2"/>'),
+  msg: svg('<path d="M4 5h16v11H9l-5 4z"/><path d="M12 8v3.5M12 13.6v.4"/>'),
+  trace: svg('<circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 8v8M8 6.5c5 .5 8 2.5 8.5 4M8 17.5c5-.5 8-2.5 8.5-4"/>'),
+  finger: svg('<path d="M7 11a5 5 0 0110 0v2M12 11v4c0 2-.8 3.6-2 5M9.5 11.5v2.5c0 1.5-.5 2.8-1.3 3.8M14.5 12v3c0 2.2-.6 4-1.6 5.5M17 15.5c0 1.4-.3 2.7-.8 3.8M4.8 15c.3-.9.4-1.9.4-3a6.8 6.8 0 0113.6 0"/>'),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  spark: svg('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>'),
+  police: svg('<path d="M12 3l8 3-1 4H5L4 6zM6 10v3a6 6 0 0012 0v-3"/>'),
+  mic: svg('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/>'),
+  eye: svg('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'),
+  pen: svg('<path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/>'),
+  file: svg('<path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 16.5h6"/>'),
+  scan: svg('<path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M7 12h10"/>'),
+  money: svg('<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9v.5M17.5 14.5v.5"/>'),
+  heart: svg('<path d="M12 20s-7.5-4.5-7.5-10A4.5 4.5 0 0112 7.5 4.5 4.5 0 0119.5 10c0 5.5-7.5 10-7.5 10z"/>'),
+  vote: svg('<path d="M5 12l4 4 10-10M4 20h16"/>'),
+  send: svg('<path d="M4 12l16-8-6 16-3-7z"/>')
 };
 
 const S = {
@@ -53,12 +61,35 @@ chatEl.className = 'chat';
 const now = () => '21:' + String(S.min).padStart(2, '0');
 setInterval(() => { S.min = Math.min(59, S.min + 1); $('#clock').textContent = now(); }, 60000);
 
-// Polish plural for "krok": 1 krok, 2-4 kroki, 5+ kroków (12-14 kroków).
-function kroki(n) {
-  const w = n === 1 ? 'krok' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'kroki' : 'kroków';
-  return n + ' ' + w;
+// Polish plurals: 1 krok, 2-4 kroki, 5+ kroków (12-14 kroków).
+function plural(n, one, few, many) {
+  if (n === 1) return one;
+  return (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? few : many;
 }
+const kroki = n => n + ' ' + plural(n, 'krok', 'kroki', 'kroków');
 function fnv(str) { let h = 0x811c9dc5; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+
+// Life events shown as services on the start screen, each with an intro page.
+const EVENTS = {
+  sprzedaz: { label: 'Sprzedaję auto', title: 'Sprzedajesz auto?', color: '#e8761a', icon: I.car, cta: 'Zacznij sprzedaż',
+    lead: 'Umowa, zgłoszenie zbycia, ubezpieczyciel i podatek za jednym razem. Asystent wypełni wszystko danymi z rejestrów, a Ty tylko podpisujesz.',
+    steps: [[I.scan, 'Kupujący skanuje Twój kod'], [I.pen, 'Podpisujecie umowę w aplikacji'], [I.office, 'Zgłoszenie zbycia trafia do starosty'], [I.shield, 'Ubezpieczyciel dostaje informację'], [I.bell, 'Kupujący dostaje przypomnienie o PCC']] },
+  portfel: { label: 'Zgubiony portfel', title: 'Zgubiłaś portfel?', color: '#d92d45', icon: I.wallet, cta: 'Zabezpiecz dokumenty',
+    lead: 'Zastrzeż dokumenty w minutę, zanim ktoś ich użyje. mDowód w telefonie działa dalej.',
+    steps: [[I.id, 'Wskaż, co było w portfelu'], [I.lock, 'Zastrzeż dowód i prawo jazdy'], [I.file, 'Złóż wniosek o nowy dowód'], [I.bell, 'Dostaniesz powiadomienie o odbiorze']] },
+  dziecko: { label: 'Narodziny dziecka', title: 'Spodziewacie się dziecka?', color: '#d0457f', icon: I.baby, cta: 'Zobacz plan',
+    lead: 'Po narodzinach większość spraw zrobi się prawie sama. Asystent przygotuje wnioski z danymi z aktu urodzenia.',
+    steps: [[I.file, 'Akt urodzenia i PESEL dziecka'], [I.home, 'Zameldowanie'], [I.money, '800 plus'], [I.users, 'Karta Dużej Rodziny'], [I.heart, 'Ubezpieczenie zdrowotne']] },
+  przeprowadzka: { label: 'Przeprowadzka', title: 'Przeprowadzasz się?', color: '#0f957f', icon: I.home, cta: 'Zobacz plan',
+    lead: 'Podaj nowy adres raz. Asystent rozpisze, kto powinien o nim wiedzieć, i przygotuje wnioski.',
+    steps: [[I.home, 'Zameldowanie pod nowym adresem'], [I.office, 'ZUS i urząd skarbowy'], [I.car, 'Adres w dowodzie rejestracyjnym'], [I.heart, 'Nowa przychodnia'], [I.vote, 'Miejsce głosowania']] },
+  sms: { label: 'Podejrzany SMS', title: 'Dostałaś dziwną wiadomość?', color: '#5a45c8', icon: I.msg, cta: 'Sprawdź wiadomość',
+    lead: 'Asystent sprawdzi SMS albo mail. Treść wiadomości traktuje wyłącznie jako dane, więc żadne polecenie z niej go nie przekona.',
+    steps: [[I.msg, 'Przekazujesz wiadomość'], [I.eye, 'Asystent sprawdza nadawcę i link'], [I.lock, 'Polecenia z treści są ignorowane'], [I.send, 'Możesz zgłosić oszustwo do CERT Polska']] },
+  mama: { label: 'Recepty mamy', title: 'Sprawy bliskich', color: '#2e8b3e', icon: I.pill, cta: 'Wykup recepty mamy',
+    lead: 'Załatwiaj sprawy mamy w ramach pełnomocnictwa. Mama widzi każdy Twój krok w swojej aplikacji.',
+    steps: [[I.users, 'Pełnomocnictwo: recepty, wizyty, opłaty do 300 zł'], [I.pill, '2 recepty czekają na wykup'], [I.bell, 'Mama dostaje powiadomienie o każdym działaniu']] }
+};
 
 // ---------- trace ----------
 const KIND = { prosba: 'Prośba', odczyt: 'Odczyt', zewn: 'Treść z zewnątrz', propozycja: 'Propozycja', regula: 'Reguła', podpis: 'Podpis', anulowano: 'Anulowano', wykonanie: 'Wykonanie', powiadomienie: 'Powiadomienie' };
@@ -73,10 +104,10 @@ function tr(kind, who, text) {
 }
 
 // ---------- chat rendering ----------
-function add(html, cls, tag = 'div') {
+function add(html, cls) {
   const sc = $('#screen');
   if (S.tab === 'asystent' && !S.view && chatEl.parentNode !== sc) sc.replaceChildren(chatEl);
-  const el = document.createElement(tag);
+  const el = document.createElement('div');
   if (cls) el.className = cls;
   el.innerHTML = html;
   chatEl.appendChild(el);
@@ -85,16 +116,18 @@ function add(html, cls, tag = 'div') {
 }
 function scrollChat() { if (S.tab === 'asystent' && !S.view) { const sc = $('#screen'); requestAnimationFrame(() => { sc.scrollTop = sc.scrollHeight; }); } }
 function line(icon, src, text, color) {
-  return add(`${icon}<span><b>${esc(src)}</b> · ${esc(text)}</span>`, 'read' + (color ? ' ' + color : ''));
+  const el = add(`${icon}<span><b>${esc(src)}</b> · ${esc(text)}</span>`, 'read');
+  if (color) el.querySelector('svg').style.color = color;
+  return el;
 }
 
 async function step(s) {
   if (s.u !== undefined) { add(esc(s.u), 'msg u'); tr('prosba', 'Ty', s.u); await sleep(350); return; }
   if (s.acting) { add(I.users + esc(s.acting), 'actingas'); tr('regula', 'Kod aplikacji', s.acting); await sleep(250); return; }
   if (s.read) { await sleep(320); line(I.check, s.read[0], s.read[1]); tr('odczyt', 'Asystent → ' + s.read[0], s.read[1]); logAccess(s.read[0], s.read[1]); return; }
-  if (s.exec) { await sleep(450); const el = line(I.done, s.exec[0], s.exec[1]); el.querySelector('svg').style.color = 'var(--ok)'; tr('wykonanie', s.exec[0], s.exec[1]); return; }
-  if (s.notify) { await sleep(300); const el = line(I.bell, 'Powiadomienie', s.notify); el.querySelector('svg').style.color = 'var(--warn)'; tr('powiadomienie', 'Kod aplikacji', s.notify); return; }
-  if (s.rule) { await sleep(300); const el = line(I.lock, 'Reguła', s.rule); el.querySelector('svg').style.color = 'var(--trust)'; tr('regula', 'Kod aplikacji', s.rule); return; }
+  if (s.exec) { await sleep(450); line(I.done, s.exec[0], s.exec[1], 'var(--ok)'); tr('wykonanie', s.exec[0], s.exec[1]); return; }
+  if (s.notify) { await sleep(300); line(I.bell, 'Powiadomienie', s.notify, '#e08a00'); tr('powiadomienie', 'Kod aplikacji', s.notify); return; }
+  if (s.rule) { await sleep(300); line(I.lock, 'Reguła', s.rule, 'var(--trust)'); tr('regula', 'Kod aplikacji', s.rule); return; }
   if (s.say) {
     const ty = add('<i></i><i></i><i></i>', 'typing'); await sleep(750); ty.remove();
     let html = md(s.say);
@@ -110,12 +143,12 @@ async function step(s) {
   }
   if (s.untrusted) {
     await sleep(300);
-    add(`<div class="lbl">${I.warn}Treść z zewnątrz · tylko dane</div><div class="from">${esc(s.untrusted.from)}</div><p>${esc(s.untrusted.text)}</p>`, 'untrusted');
+    add(`<div class="lbl">${I.warn}Treść z zewnątrz, tylko dane</div><div class="from">${esc(s.untrusted.from)}</div><p>${esc(s.untrusted.text)}</p>`, 'untrusted');
     tr('zewn', 'SMS (niezaufane)', s.untrusted.text); return;
   }
   if (s.result) {
     await sleep(350);
-    add(`<div class="ic">${I.check}</div><div><b>${esc(s.result.title)}</b><span>${esc(s.result.text)}</span></div>`, 'result');
+    add(`<div class="rc">${I.check}</div><div><b>${esc(s.result.title)}</b><span>${esc(s.result.text)}</span></div>`, 'result');
     return;
   }
   if (s.links) {
@@ -131,7 +164,7 @@ async function step(s) {
     const el = add(s.chips.map((c, i) => `<button class="chip" data-i="${i}">${esc(c.l)}</button>`).join(''), 'chips');
     el.querySelectorAll('button').forEach(b => b.onclick = () => {
       if (S.busy) return;
-      el.classList.add('used'); b.style.background = 'var(--brandSoft)';
+      el.classList.add('used'); b.style.background = 'var(--navySoft)';
       play(s.chips[+b.dataset.i].go);
     });
     return 'stop';
@@ -150,7 +183,6 @@ async function play(id, opts = {}) {
     if (await step(s) === 'stop') break;
   }
   S.busy = false;
-  refreshBadges();
 }
 
 function startCase(id) {
@@ -171,15 +203,15 @@ function qrSvg(seed, n = 25) {
     else on = rnd() < 47;
     if (on) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
   }
-  return `<svg class="qr" viewBox="-1 -1 ${n + 2} ${n + 2}" style="fill:#14213a;stroke:none">${cells}</svg>`;
+  return `<svg class="qr" viewBox="-1 -1 ${n + 2} ${n + 2}" style="fill:#141a24;stroke:none">${cells}</svg>`;
 }
 function qrStep(q) {
   const el = add(`<h4>${esc(q.title)}</h4>${qrSvg(q.title + now())}<ul>${q.items.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <p class="muted">Kod jest ważny 2 minuty i działa tylko raz.</p><button class="btn small mt">Symuluj: kupujący skanuje kod</button>`, 'qrwait');
+    <p class="muted">Kod jest ważny 2 minuty i działa tylko raz.</p><button class="btn outline mt">Symuluj: kupujący skanuje kod</button>`, 'qrwait');
   tr('podpis', 'Ty', 'Pokazałaś kod. Zakres: ' + q.items.join(', '));
   el.querySelector('button').onclick = e => {
-    e.target.disabled = true; e.target.textContent = q.who + ' zeskanował kod';
-    e.target.className = 'pill ok mt';
+    const b = e.currentTarget;
+    b.outerHTML = `<p class="status ok mt"><i></i>${esc(q.who)} zeskanował kod</p>`;
     play(q.next);
   };
 }
@@ -190,11 +222,12 @@ function confirmStep(c) {
   const code = 'CZ-' + fnv(c.title + body).slice(0, 4).toUpperCase() + '-' + fnv(body).slice(4, 8).toUpperCase();
   tr('propozycja', 'Asystent', 'Proponuje: ' + c.title + ' (' + code + ')');
   tr('regula', 'Kod aplikacji', c.rule);
-  const el = add(`<div class="ch"><div class="t"><small>Do podpisu</small><b>${esc(c.title)}</b></div><span class="code">${code}</span></div>
-    <div class="cb"><dl class="kv">${c.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>
-    <p class="effect">${esc(c.effect)}</p><div class="rule">${I.lock}<span>${esc(c.rule)}</span></div></div>
-    <div class="cf"><button class="btn ghost">Anuluj</button><button class="btn">${I.finger}Podpisz</button></div>`, 'confirm');
-  const [cancel, sign] = el.querySelectorAll('.cf button');
+  const el = add(`<div class="ch"><span class="status navy"><i></i>Do podpisu</span><span class="code">${code}</span></div>
+    <b style="display:block;font-size:17px;font-weight:700;margin-top:10px">${esc(c.title)}</b>
+    <dl class="kv">${c.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>
+    <p class="effect">${esc(c.effect)}</p><div class="rule">${I.lock}<span>${esc(c.rule)}</span></div>
+    <div class="cf"><button class="btn">${I.finger}Podpisz</button><button class="btn outline">Anuluj</button></div>`, 'confirm');
+  const [sign, cancel] = el.querySelectorAll('.cf button');
   cancel.onclick = () => {
     if (S.busy) return;
     finish('Anulowano. Nic nie zostało wysłane.', 'no');
@@ -211,7 +244,6 @@ function confirmStep(c) {
     });
   };
   function finish(text, kind) {
-    el.classList.add('done');
     el.querySelector('.cf').outerHTML = `<div class="stamp ${kind}">${kind === 'ok' ? I.check : I.x}${esc(text)}</div>`;
   }
 }
@@ -224,7 +256,7 @@ function passkey(title, code, hash, onOk) {
     <div class="hash">Kod czynności: <b>${code}</b><br>Skrót treści: ${hash.slice(0, 24)}…</div>
     <p class="muted mt">Podpisujesz dokładnie tę treść. Serwer wykona czynność tylko wtedy, gdy skrót się zgadza.</p>
     <button class="btn mt" id="fpGo">Użyj klucza dostępu</button>
-    <button class="btn ghost mt" id="fpNo">Anuluj</button></div>`);
+    <button class="btn outline mt" id="fpNo">Anuluj</button></div>`);
   $('#fpNo').onclick = closeSheet;
   $('#fpGo').onclick = async () => {
     $('#fpGo').disabled = true; $('#fp').classList.add('scan'); $('#fpTxt').textContent = 'Sprawdzam…';
@@ -242,7 +274,7 @@ function logAccess(src, text) {
 }
 const FX = {
   shareBuyer() {
-    S.consents.unshift({ id: 'c' + Date.now(), who: 'Piotr Wiśniewski (kupujący)', what: 'Imię, nazwisko, dane pojazdu PO 4R521', why: 'Umowa kupna-sprzedaży Toyoty', until: 'jednorazowo, wykorzystana dziś', icon: 'car', used: true, fresh: true });
+    S.consents.unshift({ id: 'c' + Date.now(), who: 'Piotr Wiśniewski (kupujący)', what: 'Imię, nazwisko, dane pojazdu PO 4R521', why: 'Umowa kupna-sprzedaży Toyoty', until: 'jednorazowo, wykorzystana dziś', icon: 'car', used: true });
     S.access.unshift({ when: 'dziś, ' + now(), who: 'Piotr Wiśniewski, przez Twój kod', what: 'Imię, nazwisko, dane pojazdu', basis: 'Pokazany przez Ciebie kod z zakresem', kind: 'company' });
   },
   carSold() { S.carSold = true; },
@@ -279,7 +311,7 @@ async function fallback(text) {
 }
 const STARTERS = [['sprzedaz', 'Sprzedaję auto'], ['portfel', 'Zgubiłam portfel'], ['mama', 'Wykup recepty mamy'], ['sms', 'Sprawdź podejrzany SMS'], ['oc', 'Co z moim OC?'], ['dziecko', 'Rodzi się nam dziecko'], ['przeprowadzka', 'Przeprowadzam się']];
 const STARTER_ICON = { sprzedaz: I.car, portfel: I.wallet, mama: I.pill, sms: I.msg, oc: I.shield, dziecko: I.baby, przeprowadzka: I.home };
-const STARTER_TINT = { sprzedaz: 'warn', portfel: 'red', mama: 'trust', sms: 'red', oc: '', dziecko: 'pink', przeprowadzka: 'teal' };
+const STARTER_COLOR = { sprzedaz: '#e8761a', portfel: '#d92d45', mama: '#2e8b3e', sms: '#5a45c8', oc: '#0b4a96', dziecko: '#d0457f', przeprowadzka: '#0f957f' };
 
 // ---------- navigation ----------
 function openTab(tab, view = null) {
@@ -293,26 +325,26 @@ function goLink(to, thread) {
   if (to === 'dane') { S.dataTab = 'zgody'; return openTab('dane'); }
   if (to === 'dane-log') { S.dataTab = 'log'; return openTab('dane'); }
   if (to === 'sprawy') { S.dataTab = 'sprawy'; return openTab('dane'); }
-  if (to === 'start-todo') { const s = $('#todoSec'); if (s) $('#screen').scrollTo({ top: s.offsetTop - 8 }); return; }
   if (to === 'rules') return openTab(S.tab, { k: 'rules' });
   openTab(to);
 }
 
-function topbar(title, back) {
+// Root tabs get avatar + bell, sub-pages get a back arrow and a centred title.
+function topbar(title, back, sub) {
   const tb = $('#topbar');
-  const home = S.tab === 'start' && !S.view;
-  $('#phone').classList.toggle('dark-top', home);
-  if (home) {
-    tb.innerHTML = `<div class="brandmark"><div class="logo">m</div><div><b>mObywatel</b><small>pod Twoją kontrolą · koncepcja</small></div></div>
-      <button class="iconbtn infobtn" id="infoBtn" aria-label="O koncepcji">${I.info}</button>
-      <button class="avatar" id="avBtn" aria-label="Granice asystenta">AN</button>`;
+  const info = `<button class="iconbtn infobtn" id="infoBtn" aria-label="O koncepcji">${I.info}</button>`;
+  if (!back && !title) {
+    tb.className = 'topbar root';
+    tb.innerHTML = `<button class="avatar" id="avBtn" aria-label="Granice asystenta">AN</button>
+      <div class="tb-right">${info}<button class="iconbtn" id="bellBtn" aria-label="Powiadomienia">${I.bell}</button></div>`;
   } else {
-    tb.innerHTML = `${back ? `<button class="back" id="backBtn" aria-label="Wstecz">${I.back}</button>` : ''}<h1>${esc(title)}</h1>
-      <button class="iconbtn infobtn" id="infoBtn" aria-label="O koncepcji">${I.info}</button>
-      ${back ? '' : '<button class="avatar" id="avBtn" aria-label="Granice asystenta">AN</button>'}`;
+    tb.className = 'topbar';
+    tb.innerHTML = `${back ? `<button class="iconbtn" id="backBtn" aria-label="Wstecz">${I.back}</button>` : '<span></span>'}
+      <h1>${esc(title)}${sub ? `<span class="sub">${esc(sub)}</span>` : ''}</h1><div class="tb-right" style="justify-content:flex-end">${info}</div>`;
   }
   const bb = $('#backBtn'); if (bb) bb.onclick = () => openView(null);
   const av = $('#avBtn'); if (av) av.onclick = () => openView({ k: 'rules' });
+  const bl = $('#bellBtn'); if (bl) bl.onclick = () => toast('Nie masz nowych powiadomień.');
   $('#infoBtn').onclick = () => sheet($('#about').innerHTML.replace(/<button class="reset"[^>]*>.*?<\/button>/, '')
     .replace('<h1>', '<h1 class="about-h1">').replace('<h2>', '<h2 class="about-h2">'), true);
 }
@@ -324,93 +356,100 @@ function render() {
   if (v && v.k === 'rules') { topbar('Granice asystenta', true); sc.innerHTML = viewRules(); bindRules(); }
   else if (v && v.k === 'trace') { topbar('Ślad sprawy', true); sc.innerHTML = viewTrace(v.id); }
   else if (v && v.k === 'doc') { topbar(DOCS[v.id].name, true); sc.innerHTML = viewDoc(v.id); bindDoc(v.id); }
-  else if (v && v.k === 'person') { topbar('Pełnomocnictwo', true); sc.innerHTML = viewPerson(v.id); bindPerson(v.id); }
+  else if (v && v.k === 'person') { topbar('Pełnomocnictwo', true); sc.innerHTML = viewPerson(v.id); bindCommon(sc); bindPerson(); }
+  else if (v && v.k === 'event') { topbar(EVENTS[v.id].label, true); sc.innerHTML = viewEvent(v.id); bindCommon(sc); }
   else if (S.tab === 'start') { topbar(); sc.innerHTML = viewStart(); bindStart(); }
-  else if (S.tab === 'dokumenty') { topbar('Dokumenty'); sc.innerHTML = viewDocs(); bindDocs(); }
-  else if (S.tab === 'asystent') { topbar('Asystent'); renderChat(); return; }
-  else if (S.tab === 'dane') { topbar('Moje dane'); sc.innerHTML = viewData(); bindData(); }
-  else if (S.tab === 'bliscy') { topbar('Bliscy'); sc.innerHTML = viewPeople(); bindPeople(); }
+  else if (S.tab === 'dokumenty') { topbar(); sc.innerHTML = viewDocs(); bindCommon(sc); }
+  else if (S.tab === 'asystent') { topbar('Asystent', false, 'Granice ustala kod, nie rozmowa'); renderChat(); return; }
+  else if (S.tab === 'dane') { topbar(); sc.innerHTML = viewData(); bindData(); }
+  else if (S.tab === 'bliscy') { topbar(); sc.innerHTML = viewPeople(); bindPeople(); }
   sc.scrollTop = 0;
 }
-function refreshBadges() { /* tabs re-render on open; nothing to badge for now */ }
 
-// ---------- screens ----------
-function viewStart() {
-  const todo = [];
-  if (!S.carSold) todo.push(`<button class="todo" data-run="oc"><div class="ic warn">${I.car}</div><div class="tx"><b>OC Toyoty kończy się za 6 dni</b><span>Wznowi się samo. Sprawdź, czy tego chcesz.</span></div><span class="pill warn">29.10</span></button>`);
-  todo.push(`<button class="todo" data-run="mama"><div class="ic trust">${I.pill}</div><div class="tx"><b>Recepty mamy czekają na wykup</b><span>Działasz jako pełnomocniczka Haliny Nowak</span></div><span class="pill trust">2 leki</span></button>`);
-  const active = S.consents.filter(c => !c.used && !c.revoked);
-  if (active.length) todo.push(`<button class="todo" data-goto="dane"><div class="ic">${I.shield}</div><div class="tx"><b>${active.length} ${active.length === 1 ? 'firma ma' : 'firmy mają'} teraz Twoje dane</b><span>${esc(active[0].who)}, ${esc(active[0].until)}</span></div>${I.chev}</button>`);
-  const recent = S.threads.slice(0, 3);
-  const reads = S.access.filter(a => a.kind !== 'me').length;
-  return `<section class="hero">
-      <div class="date">Piątek, 23 października</div>
-      <h2>Dobry wieczór, Anno</h2>
-      <div class="stats">
-        <button class="stat" data-goto="start-todo"><b>${todo.length}</b><span>${todo.length === 1 ? 'sprawa' : 'sprawy'} do załatwienia</span></button>
-        <button class="stat" data-goto="dane"><b>${active.length}</b><span>aktywne zgody na Twoje dane</span></button>
-        <button class="stat" data-goto="dane-log"><b>${reads}</b><span>odczyty przez instytucje</span></button>
-      </div>
-      <button class="askbox" id="askBox"><span class="sp">${I.spark}</span><span class="q">Powiedz, co chcesz załatwić…</span><span class="mic">${I.mic}</span></button>
-    </section>
-    <div class="sec" id="todoSec">Do załatwienia</div>${todo.join('')}
-    <div class="sec">Co się dzieje w Twoim życiu?</div>
-    <div class="events">
-      <button class="event ev-car" data-run="sprzedaz"><div class="em">${I.car}</div><div><b>Sprzedaję auto</b><small>umowa, starosta, OC</small></div></button>
-      <button class="event ev-wallet" data-run="portfel"><div class="em">${I.wallet}</div><div><b>Zgubiłam portfel</b><small>zastrzeżenie w minutę</small></div></button>
-      <button class="event ev-baby" data-run="dziecko"><div class="em">${I.baby}</div><div><b>Rodzi się dziecko</b><small>PESEL, 800 plus, meldunek</small></div></button>
-      <button class="event ev-home" data-run="przeprowadzka"><div class="em">${I.home}</div><div><b>Przeprowadzam się</b><small>jeden adres, wszędzie</small></div></button>
-    </div>
-    <button class="scam" data-run="sms"><div class="ic">${I.msg}</div><div style="flex:1"><b>Podejrzany SMS albo mail?</b><span>Sprawdzę go, nie wykonując żadnych poleceń z treści</span></div><span class="go">Sprawdź</span></button>
-    <div class="sec">Dokumenty <small data-goto="dokumenty" style="cursor:pointer">Wszystkie</small></div>
-    <div class="docstrip">${Object.entries(DOCS).map(([k, d]) => `<button class="minidoc ${d.g}" data-doc="${k}"><b>${esc(d.name)}</b><span>${esc(d.short())}</span></button>`).join('')}</div>
-    ${recent.length ? `<div class="sec">Ostatnie sprawy <small data-goto="sprawy" style="cursor:pointer">Wszystkie</small></div><div class="list">${recent.map(threadRow).join('')}</div>` : ''}`;
-}
-function threadRow(t) {
-  const cls = { 'zakończona': 'ok', 'anulowana': 'red', 'w toku': 'warn', 'odłożona': 'grey', 'zaplanowana': 'grey' }[t.status] || 'grey';
-  return `<button class="row" data-trace="${t.id}"><div class="ic trust">${I.trace}</div><div class="tx"><b>${esc(t.title)}</b><span>${t.id} · ${t.started} · ${kroki(t.events.length)}</span></div><span class="pill ${cls}">${t.status}</span></button>`;
-}
 function bindCommon(root) {
   root.querySelectorAll('[data-run]').forEach(b => b.onclick = () => startCase(b.dataset.run));
   root.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => goLink(b.dataset.goto));
   root.querySelectorAll('[data-doc]').forEach(b => b.onclick = () => openTab('dokumenty', { k: 'doc', id: b.dataset.doc }));
   root.querySelectorAll('[data-trace]').forEach(b => b.onclick = () => openTab('dane', { k: 'trace', id: b.dataset.trace }));
+  root.querySelectorAll('[data-event]').forEach(b => b.onclick = () => openTab('start', { k: 'event', id: b.dataset.event }));
+}
+
+const statusCls = s => ({ 'zakończona': 'ok', 'anulowana': 'red', 'w toku': 'warn', 'odłożona': '', 'zaplanowana': 'navy' }[s] || '');
+function threadRow(t) {
+  return `<button class="lrow" data-trace="${t.id}"><span class="li">${I.trace}</span><span class="lt"><b>${esc(t.title)}</b><small>${t.id} · ${t.started} · ${kroki(t.events.length)}</small></span><span class="status ${statusCls(t.status)}"><i></i>${t.status}</span></button>`;
+}
+
+// ---------- start ----------
+const me = D.me;
+const DOCS = {
+  dowod: { name: 'mDowód', color: '#1f5fd1', icon: I.id, share: true,
+    rows: [['Imię i nazwisko', me.first + ' ' + me.last], ['PESEL', me.pesel], ['Data urodzenia', me.born], ['Numer', me.idNo], ['Ważny do', me.idValid]] },
+  prawojazdy: { name: 'mPrawo jazdy', color: '#4b3bb4', icon: I.car, share: true,
+    rows: [['Kategorie', me.dl.cat], ['Numer blankietu', me.dl.no], ['Ważne do', me.dl.valid], ['Punkty karne', String(me.dl.points)]] },
+  pojazd: { name: 'Moje pojazdy', color: '#e8761a', icon: I.car, share: false,
+    rows: [['Pojazd', me.car.name], ['Rejestracja', me.car.plate], ['VIN', me.car.vin], ['OC do', me.car.oc], ['Badanie do', me.car.inspection]] }
+};
+function viewStart() {
+  const active = S.consents.filter(c => !c.used && !c.revoked);
+  const todo = [];
+  if (!S.carSold) todo.push(`<div class="pay"><span class="status red"><i></i>Kończy się 29.10</span><b>OC Toyoty Corolla PO 4R521</b>
+    <p>Ubezpieczyciel wznowi polisę sam. Sprawdź, czy tego chcesz.</p><button class="btn" data-run="oc">Sprawdź z asystentem</button></div>`);
+  todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
+    <p>Atorwastatyna 20 mg i Metformina 500 mg</p><button class="btn" data-run="mama">Wykup z asystentem</button></div>`);
+  return `<h1 class="ptitle">Dobry wieczór, Anno</h1>
+    <button class="ask" id="askBox"><span class="orb">${I.spark}</span><span class="q"><b>Zapytaj asystenta</b><small>Powiedz, co chcesz załatwić</small></span><span class="mic">${I.mic}</span></button>
+    <div class="sh"><h2>Do załatwienia</h2></div>${todo.join('')}
+    <div class="sh"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
+    <div class="hscroll">${Object.entries(DOCS).map(([k, d]) => `<button class="dcard" data-doc="${k}"><div class="dtop wave-${k}"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`).join('')}</div>
+    <div class="sh"><h2>Sprawy życiowe</h2></div>
+    <div class="grid3">${Object.entries(EVENTS).map(([k, e]) => `<button class="svc" data-event="${k}"><span class="tile" style="color:${e.color}">${e.icon}</span>${esc(e.label)}</button>`).join('')}</div>
+    <div class="sh"><h2>Twoje dane</h2></div>
+    <button class="lrow" data-goto="dane"><span class="li">${I.shield}</span><span class="lt"><b>${active.length} ${plural(active.length, 'firma ma', 'firmy mają', 'firm ma')} teraz Twoje dane</b><small>Sprawdź, komu i po co je udostępniłaś</small></span>${I.chev}</button>
+    <button class="lrow" data-goto="dane-log"><span class="li">${I.eye}</span><span class="lt"><b>Kto czytał Twoje dane</b><small>Ostatnio: Urząd Skarbowy Poznań-Wilda, 21.10</small></span>${I.chev}</button>
+    ${S.threads.length ? `<div class="sh"><h2>Ostatnie sprawy</h2><button class="pillbtn" data-goto="sprawy">Wszystkie</button></div>${S.threads.slice(0, 3).map(threadRow).join('')}` : ''}`;
 }
 function bindStart() {
   const sc = $('#screen'); bindCommon(sc);
   $('#askBox').onclick = () => { openTab('asystent'); setTimeout(() => $('#ask').focus(), 50); };
+  $('#addDoc').onclick = () => toast('W prototypie są trzy dokumenty. Dodawanie kolejnych działa jak w obecnej aplikacji.');
 }
 
-const me = D.me;
-const DOCS = {
-  dowod: { name: 'mDowód', g: 'g-id', short: () => 'ważny do ' + me.idValid, share: true,
-    rows: [['Imię i nazwisko', me.first + ' ' + me.last], ['PESEL', me.pesel], ['Data urodzenia', me.born], ['Numer', me.idNo], ['Ważny do', me.idValid]] },
-  prawojazdy: { name: 'Prawo jazdy', g: 'g-dl', short: () => 'kat. ' + me.dl.cat + ', ' + me.dl.points + ' pkt karne', share: true,
-    rows: [['Kategorie', me.dl.cat], ['Numer blankietu', me.dl.no], ['Ważne do', me.dl.valid], ['Punkty karne', String(me.dl.points)]] },
-  pojazd: { name: 'Mój pojazd', g: 'g-car', short: () => S.carSold ? 'zbyty 23.10' : me.car.plate + ', OC do ' + me.car.oc, share: false,
-    rows: [['Pojazd', me.car.name], ['Rejestracja', me.car.plate], ['VIN', me.car.vin], ['OC do', me.car.oc], ['Badanie do', me.car.inspection]] }
-};
-function docCard(k, tag) {
-  const d = DOCS[k];
-  const name = k === 'pojazd' ? me.car.name : me.first + ' ' + me.last;
-  const sub = k === 'pojazd' ? (S.carSold ? 'zgłoszono zbycie 23.10.2026' : me.car.plate) : k === 'dowod' ? 'PESEL ' + me.pesel : 'kategoria ' + me.dl.cat;
-  const meta = tag === 'button' ? `<div class="dmeta">${d.rows.slice(-2).map(r => `<div>${esc(r[0])}<b>${esc(r[1])}</b></div>`).join('')}</div>` : '';
-  return `<${tag} class="doc ${d.g}" ${tag === 'button' ? `data-doc="${k}"` : ''}>
-    <div class="dhead"><span class="dtype">${esc(d.name)}</span><span class="chip"></span></div>
-    <div class="dbody">${k === 'dowod' ? '<div class="photo"></div>' : ''}<div><div class="dname">${esc(name)}</div><div class="dsub">${esc(sub)}</div></div></div>
-    ${meta}</${tag}>`;
+function viewEvent(id) {
+  const e = EVENTS[id];
+  return `<div class="hero-ic" style="background:${e.color}">${e.icon}</div>
+    <h2 class="stitle">${esc(e.title)}</h2><p class="slead">${esc(e.lead)}</p>
+    <ul class="steps">${e.steps.map(s => `<li><span style="color:${e.color};display:grid">${s[0]}</span>${esc(s[1])}</li>`).join('')}</ul>
+    <div class="cta"><button class="btn" data-run="${id}">${esc(e.cta)}</button></div>`;
 }
+
+// ---------- documents ----------
 function viewDocs() {
-  return Object.keys(DOCS).map(k => docCard(k, 'button')).join('')
-    + `<p class="muted" style="margin:6px 4px">Dokumenty i dane są fikcyjne. Wygląd nie odwzorowuje prawdziwych dokumentów.</p>`;
+  return `<h1 class="ptitle">Dokumenty</h1>
+    <div class="wallet">${Object.entries(DOCS).map(([k, d]) => `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
+      <span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span></button>`).join('')}</div>
+    <p class="muted mt" style="margin:14px 4px 0">Dane są fikcyjne. Wygląd dokumentów nie odwzorowuje prawdziwych wzorów.</p>`;
 }
-function bindDocs() { bindCommon($('#screen')); }
 function viewDoc(id) {
   const d = DOCS[id];
-  return `${docCard(id, 'div')}
-    <div class="card"><dl class="kv">${d.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>
-    ${d.share ? `<button class="btn mt" id="shareBtn">${I.eye}Pokaż komuś</button><p class="muted mt" style="text-align:center">Wybierzesz, co dokładnie zobaczy druga osoba.</p>` : ''}
-    <div class="list mt"><button class="row" data-goto="dane-log"><div class="ic">${I.shield}</div><div class="tx"><b>Kto czytał ten dokument</b><span>Dziennik odczytów z rejestrów</span></div>${I.chev}</button></div>`;
+  let top;
+  if (id === 'dowod') top = `<div class="idtop"><div class="photo"></div><div class="fields">
+      <div><b>${esc(me.first)}</b><span>Imię (imiona)</span></div><div><b>${esc(me.last)}</b><span>Nazwisko</span></div>
+      <div><b>${esc(me.born)}</b><span>Data urodzenia</span></div><div><b>${esc(me.pesel)}</b><span>Numer PESEL</span></div></div></div>`;
+  else if (id === 'prawojazdy') top = `<div class="idtop pj"><div class="photo"></div><div class="fields">
+      <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>${esc(me.dl.cat)}</b><span>Kategorie</span></div>
+      <div><b>${esc(me.dl.valid)}</b><span>Ważne do</span></div><div><b>${me.dl.points} pkt</b><span>Punkty karne</span></div></div></div>`;
+  else top = `<div class="idtop car"><div class="fields">
+      <div><b>${esc(me.car.name)}</b><span>Pojazd</span></div><div><b>${esc(me.car.plate)}</b><span>Numer rejestracyjny</span></div>
+      <div><b>${esc(me.car.oc)}</b><span>OC ważne do</span></div><div><b>${esc(me.car.inspection)}</b><span>Badanie techniczne do</span></div></div></div>`;
+  const valid = id === 'pojazd' && S.carSold
+    ? `<div class="valid" style="color:var(--warn)"><span class="vc" style="border-color:var(--warn)">${I.info}</span>Zgłoszono zbycie 23.10.2026</div>`
+    : `<div class="valid"><span class="vc">${I.check}</span>Dokument ważny</div>`;
+  return `<p class="muted center" style="margin:2px 0 10px">Czas: ${now()}:07 23.10.2026</p>
+    <div class="idcard">${top}${valid}</div>
+    <div class="mt"></div>
+    ${d.share ? `<button class="lrow" id="shareBtn"><span class="li">${I.scan}</span><span class="lt"><b>Pokaż komuś</b><small>Tylko to, co trzeba, np. „mam 18 lat”</small></span>${I.chev}</button>` : ''}
+    <button class="lrow" id="detailsBtn"><span class="li">${I.id}</span><span class="lt"><b>Dane dokumentu</b></span>${I.chev}</button>
+    <button class="lrow" data-goto="dane-log"><span class="li">${I.eye}</span><span class="lt"><b>Kto czytał ten dokument</b></span>${I.chev}</button>`;
 }
 const SHARE = {
   dowod: [['Tylko: mam ukończone 18 lat', 'np. zakup w sklepie. Bez imienia, PESEL-u i daty urodzenia.', ['Pełnoletność: tak', 'Zdjęcie']],
@@ -421,6 +460,8 @@ const SHARE = {
 };
 function bindDoc(id) {
   bindCommon($('#screen'));
+  $('#detailsBtn').onclick = () => sheet(`<h3>Dane dokumentu</h3><div class="mt"><dl class="kv">${DOCS[id].rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl></div>
+    <button class="btn outline mt" onclick="closeSheet()">Zamknij</button>`);
   const b = $('#shareBtn'); if (!b) return;
   b.onclick = () => {
     let pick = 0;
@@ -440,10 +481,10 @@ function bindDoc(id) {
 }
 function showQr(o) {
   let left = 120;
-  sheet(`<h3 style="text-align:center">Pokaż ten kod</h3>${qrSvg(o[0] + now())}
+  sheet(`<h3 class="center">Pokaż ten kod</h3>${qrSvg(o[0] + now())}
     <div class="timer" id="qrT">Kod wygaśnie za 2:00</div>
-    <div class="card mt" style="box-shadow:none;background:var(--bg)"><b style="font-size:14px">Odbiorca zobaczy:</b><div class="scope">${o[2].map(x => `<span class="pill">${esc(x)}</span>`).join('')}</div></div>
-    <p class="muted mt">Kto zeskanuje kod, trafi do dziennika w Moich danych.</p><button class="btn ghost mt" id="qrClose">Zamknij</button>`);
+    <div class="card mt" style="box-shadow:none;background:var(--bg)"><b style="font-size:14px">Odbiorca zobaczy:</b><div class="scope">${o[2].map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div></div>
+    <p class="muted mt">Kto zeskanuje kod, trafi do dziennika w Moich danych.</p><button class="btn outline mt" id="qrClose">Zamknij</button>`);
   const t = setInterval(() => {
     left--; const el = $('#qrT');
     if (!el || left <= 0) { clearInterval(t); if (el) el.textContent = 'Kod wygasł'; return; }
@@ -452,51 +493,55 @@ function showQr(o) {
   $('#qrClose').onclick = () => { clearInterval(t); closeSheet(); };
 }
 
+// ---------- assistant ----------
 function renderChat() {
   const sc = $('#screen');
   if (!chatEl.children.length) {
-    sc.innerHTML = `<div class="intro"><div class="orb">${I.spark}</div><h2>W czym pomóc, Anno?</h2><p>Rejestry sprawdzam sama. Wszystko, co coś zmienia, potwierdzasz podpisem na karcie.</p></div>
-      <div class="starters">${STARTERS.map(s => `<button class="starter" data-run="${s[0]}"><span class="ic ${STARTER_TINT[s[0]]}">${STARTER_ICON[s[0]]}</span>${esc(s[1])}</button>`).join('')}</div>
-      <p class="muted" style="margin:16px 6px 0;text-align:center">W prototypie asystent działa na przygotowanych scenariuszach. Możesz też wpisać własne pytanie.</p>`;
-    sc.querySelectorAll('[data-run]').forEach(b => b.onclick = () => { if (!S.busy) { sc.replaceChildren(chatEl); play(b.dataset.run); } });
+    sc.innerHTML = `<div class="hero-ic soft" style="width:96px;height:96px;margin-top:10px">${I.spark}</div>
+      <h2 class="stitle">W czym pomóc, Anno?</h2>
+      <p class="slead">Rejestry sprawdzam sama. Wszystko, co coś zmienia, potwierdzasz podpisem na karcie.</p>
+      <div class="mt" style="margin-top:20px">${STARTERS.map(s => `<button class="lrow" data-start="${s[0]}"><span class="li" style="color:${STARTER_COLOR[s[0]]}">${STARTER_ICON[s[0]]}</span><span class="lt"><b>${esc(s[1])}</b></span>${I.chev}</button>`).join('')}</div>
+      <p class="muted center" style="margin:6px 6px 0">W prototypie asystent działa na przygotowanych scenariuszach. Możesz też wpisać własne pytanie.</p>`;
+    sc.querySelectorAll('[data-start]').forEach(b => b.onclick = () => { if (!S.busy) { sc.replaceChildren(chatEl); play(b.dataset.start); } });
     return;
   }
   sc.replaceChildren(chatEl);
   sc.scrollTop = sc.scrollHeight;
 }
 
+// ---------- my data ----------
+const CONSENT_ICON = { car: I.car, med: I.pill, bank: I.bank };
 function viewData() {
   const seg = `<div class="seg"><button data-seg="zgody" class="${S.dataTab === 'zgody' ? 'on' : ''}">Zgody</button><button data-seg="log" class="${S.dataTab === 'log' ? 'on' : ''}">Kto czytał</button><button data-seg="sprawy" class="${S.dataTab === 'sprawy' ? 'on' : ''}">Ślady spraw</button></div>`;
   let body = '';
   if (S.dataTab === 'zgody') {
-    body = `<p class="muted" style="margin:8px 4px 12px">Kto ma teraz Twoje dane i po co. Zgodę cofasz jednym ruchem, bez podpisu.</p>`
-      + S.consents.map(c => `<div class="consent ${c.revoked ? 'revoked' : ''} ${c.fresh ? 'fresh' : ''}"><div class="ic ${CONSENT_TINT[c.icon] || ''}">${CONSENT_ICON[c.icon] || I.shield}</div><div class="body"><div class="top"><b>${esc(c.who)}</b>${c.revoked ? '<span class="pill red">cofnięta</span>' : c.used ? '<span class="pill grey">wykorzystana</span>' : '<span class="pill ok">aktywna</span>'}</div>
-        <div class="what">${esc(c.what)}</div><div class="meta"><span>${esc(c.why)} · ${esc(c.revoked ? 'cofnięta dziś, ' + c.revoked : c.until)}</span>
-        ${!c.used && !c.revoked ? `<button class="revoke" data-rev="${c.id}">Cofnij</button>` : ''}</div></div></div>`).join('');
+    body = S.consents.map(c => {
+      const st = c.revoked ? '<span class="status red"><i></i>Cofnięta</span>' : c.used ? '<span class="status"><i></i>Wykorzystana</span>' : '<span class="status ok"><i></i>Aktywna</span>';
+      return `<div class="pay consent ${c.revoked ? 'revoked' : ''}">${st}<b>${esc(c.who)}</b><p class="what">${esc(c.what)}</p>
+        <p class="meta">${esc(c.why)}<br>Ważna: <strong>${esc(c.revoked ? 'cofnięta dziś, ' + c.revoked : c.until)}</strong></p>
+        ${!c.used && !c.revoked ? `<button class="btn danger" data-rev="${c.id}">Cofnij zgodę</button>` : ''}</div>`;
+    }).join('');
   } else if (S.dataTab === 'log') {
-    const ic = { me: ['', I.user], office: ['warn', I.office], police: ['red', I.police], company: ['trust', I.bank] };
-    body = `<p class="muted" style="margin:8px 4px 12px">Każdy odczyt Twoich danych z rejestrów państwowych, z podstawą prawną. Dziennik prowadzą rejestry, nie aplikacja.</p>
-      <div class="list">${S.access.map(a => `<div class="row"><div class="ic ${ic[a.kind][0]}">${ic[a.kind][1]}</div><div class="tx"><b>${esc(a.who)}</b><span>${esc(a.what)}</span><span>${esc(a.when)} · ${esc(a.basis)}</span></div></div>`).join('')}</div>
-      <button class="btn ghost mt" id="notMe">To nie byłam ja? Zgłoś odczyt</button>`;
+    const ic = { me: I.user, office: I.office, police: I.police, company: I.bank };
+    body = `<p class="muted" style="margin:0 4px 12px">Każdy odczyt Twoich danych z rejestrów, z podstawą prawną. Dziennik prowadzą rejestry, nie aplikacja.</p>
+      ${S.access.map(a => `<div class="lrow" style="align-items:flex-start"><span class="li">${ic[a.kind]}</span><span class="lt"><b>${esc(a.who)}</b><small>${esc(a.what)}</small><small>${esc(a.when)} · ${esc(a.basis)}</small></span></div>`).join('')}
+      <button class="btn outline mt" id="notMe">To nie byłam ja? Zgłoś odczyt</button>`;
   } else {
-    body = `<p class="muted" style="margin:8px 4px 12px">Każda sprawa z asystentem zostawia ślad: od Twojej prośby, przez każdy odczyt i regułę, do decyzji urzędu.</p>`
-      + (S.threads.length ? `<div class="list">${S.threads.map(threadRow).join('')}</div>` : `<div class="card muted">Jeszcze nic tu nie ma. Załatw coś z asystentem, na przykład <button class="link" data-run="sprzedaz" style="margin-top:8px">Sprzedaję auto</button></div>`);
+    body = `<p class="muted" style="margin:0 4px 12px">Każda sprawa z asystentem zostawia ślad: od Twojej prośby, przez każdy odczyt i regułę, do decyzji urzędu.</p>`
+      + (S.threads.length ? S.threads.map(threadRow).join('') : `<div class="card center"><p class="muted">Jeszcze nic tu nie ma. Załatw coś z asystentem.</p><button class="btn mt" data-run="sprzedaz">Sprzedaję auto</button></div>`);
   }
-  const active = S.consents.filter(c => !c.used && !c.revoked).length;
-  const inst = new Set(S.access.filter(a => a.kind !== 'me').map(a => a.who)).size;
-  return `<div class="kpis"><div class="kpi ok"><b>${active}</b><span>aktywne zgody</span></div><div class="kpi warn"><b>${inst}</b><span>${inst === 1 ? 'instytucja czytała' : (inst % 10 >= 2 && inst % 10 <= 4 && (inst % 100 < 12 || inst % 100 > 14)) ? 'instytucje czytały' : 'instytucji czytało'} dane</span></div><div class="kpi trust"><b>${S.threads.length}</b><span>ślady spraw</span></div></div>
-    <div class="list" style="margin:0 0 10px"><button class="row" data-goto="rules"><div class="ic trust">${I.lock}</div><div class="tx"><b>Granice asystenta</b><span>Czego asystent nigdy nie zrobi bez Ciebie</span></div>${I.chev}</button></div>${seg}${body}`;
+  return `<h1 class="ptitle">Moje dane</h1>
+    <button class="lrow" data-goto="rules"><span class="li">${I.lock}</span><span class="lt"><b>Granice asystenta</b><small>Czego asystent nigdy nie zrobi bez Ciebie</small></span>${I.chev}</button>
+    <div class="mt"></div>${seg}${body}`;
 }
-const CONSENT_ICON = { car: I.car, med: I.pill, bank: I.bank };
-const CONSENT_TINT = { car: 'warn', med: 'pink', bank: 'trust' };
 function bindData() {
   const sc = $('#screen'); bindCommon(sc);
   sc.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => { S.dataTab = b.dataset.seg; render(); });
   sc.querySelectorAll('[data-rev]').forEach(b => b.onclick = () => {
     const c = S.consents.find(x => x.id === b.dataset.rev);
     sheet(`<h3>Cofnąć zgodę?</h3><p class="sub"><b>${esc(c.who)}</b> straci dostęp do: ${esc(c.what.toLowerCase())}.</p>
-      <div class="rule" style="display:flex;gap:8px;font-size:13px;color:var(--trust);background:var(--trustSoft);border-radius:10px;padding:10px 12px;margin-top:14px">${I.lock}<span>Cofnięcie nie wymaga podpisu. Łatwiej zabrać niż dać.</span></div>
-      <button class="btn red mt" id="revOk">Cofnij zgodę</button><button class="btn ghost mt" id="revNo">Zostaw</button>`);
+      <div class="rule">${I.lock}<span>Cofnięcie nie wymaga podpisu. Łatwiej zabrać niż dać.</span></div>
+      <button class="btn mt" id="revOk" style="background:var(--red)">Cofnij zgodę</button><button class="btn outline mt" id="revNo">Zostaw</button>`);
     $('#revNo').onclick = closeSheet;
     $('#revOk').onclick = () => { c.revoked = now(); closeSheet(); render(); toast(`Zgoda cofnięta o ${now()}. ${c.who} nie ma już dostępu.`); };
   });
@@ -506,58 +551,61 @@ function bindData() {
 function viewTrace(id) {
   const t = S.threads.find(x => x.id === id);
   if (!t) return '<p class="muted">Nie ma takiej sprawy.</p>';
-  return `<div class="tcard"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:19px">${esc(t.title)}</b><span class="pill ${t.status === 'zakończona' ? 'ok' : t.status === 'anulowana' ? 'red' : 'warn'}">${t.status}</span></div>
-      <p class="muted" style="margin-top:4px">Sprawa ${t.id} · rozpoczęta ${t.started} · ${kroki(t.events.length)}</p>
-      <div class="legend"><span class="pill">Ty</span><span class="pill ok">rejestry i urzędy</span><span class="pill trust">reguły w kodzie</span></div></div>
-    <div class="tl mt">${t.events.map(e => `<div class="ev ${e.kind}"><div class="eh"><b>${KIND[e.kind]}</b><span>#${e.n}${e.parent ? ' ← #' + e.parent : ''} · ${e.t}</span></div><p>${esc(e.text)}</p><div class="who">${esc(e.who)}</div></div>`).join('')}</div>
-    <p class="muted" style="margin:0 4px">Każdy krok ma numer sprawy i poprzedniego kroku, więc da się odtworzyć cały łańcuch od prośby do skutku. Asystent nie może niczego z tej listy usunąć.</p>`;
+  return `<div class="pay"><span class="status ${statusCls(t.status)}"><i></i>${t.status}</span><b>${esc(t.title)}</b>
+      <p>Sprawa ${t.id} · rozpoczęta ${t.started} · ${kroki(t.events.length)}</p></div>
+    <div class="tl">${t.events.map(e => `<div class="ev ${e.kind}"><div class="eh"><b>${KIND[e.kind]}</b><span>#${e.n}${e.parent ? ' ← #' + e.parent : ''} · ${e.t}</span></div><p>${esc(e.text)}</p><div class="who">${esc(e.who)}</div></div>`).join('')}</div>
+    <p class="muted" style="margin:4px 4px 0">Każdy krok ma numer sprawy i poprzedniego kroku, więc da się odtworzyć cały łańcuch od prośby do skutku. Asystent nie może niczego z tej listy usunąć.</p>`;
 }
 
 function viewRules() {
-  return `<div class="rulehero"><div class="ic">${I.lock}</div><div><b>Tego nie zmieni żadna rozmowa</b><p>Zasady z kłódką są zapisane w kodzie aplikacji i sprawdza je serwer. Asystent ich nie zmieni, nawet gdy ktoś go o to poprosi w rozmowie, SMS-ie czy mailu.</p></div></div>
-    <div class="sec">Zawsze, bez wyjątków</div>
-    <div class="list rules">${S.rules.map((r, i) => r.locked ? `<div class="row"><div class="tx"><b>${esc(r.t)}</b><span>${esc(r.d)}</span></div><span class="lock">${I.lock}w kodzie</span></div>` : '').join('')}</div>
-    <div class="sec">Twoje ustawienia</div>
-    <div class="list rules">${S.rules.map((r, i) => !r.locked ? `<button class="row" data-rule="${i}"><div class="tx"><b>${esc(r.t)}</b><span>${esc(r.d)}</span></div><span class="switch ${r.on ? 'on' : ''}"></span></button>` : '').join('')}</div>`;
+  return `<div class="hero-ic soft" style="width:96px;height:96px">${I.lock}</div>
+    <h2 class="stitle">Tego nie zmieni żadna rozmowa</h2>
+    <p class="slead">Zasady z kłódką są zapisane w kodzie aplikacji i sprawdza je serwer. Asystent ich nie zmieni, nawet gdy ktoś go o to poprosi w rozmowie, SMS-ie czy mailu.</p>
+    <div class="sh"><h2>Zawsze, bez wyjątków</h2></div>
+    ${S.rules.map(r => r.locked ? `<div class="lrow"><span class="lt"><b>${esc(r.t)}</b><small>${esc(r.d)}</small></span><span class="lock">${I.lock}w kodzie</span></div>` : '').join('')}
+    <div class="sh"><h2>Twoje ustawienia</h2></div>
+    ${S.rules.map((r, i) => !r.locked ? `<button class="lrow" data-rule="${i}"><span class="lt"><b>${esc(r.t)}</b><small>${esc(r.d)}</small></span><span class="switch ${r.on ? 'on' : ''}"></span></button>` : '').join('')}`;
 }
 function bindRules() {
   document.querySelectorAll('[data-rule]').forEach(b => b.onclick = () => { const r = S.rules[+b.dataset.rule]; r.on = !r.on; render(); toast(r.t + ': ' + (r.on ? 'włączone' : 'wyłączone')); });
 }
 
+// ---------- people ----------
 function viewPeople() {
-  const card = (p, mine) => `<${mine ? 'button' : 'div'} class="card pcard" ${mine ? `data-person="${p.id}"` : ''}>
-    <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b style="font-size:16px">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
-    <div class="scope">${p.scope.map(s => `<span class="pill ${mine ? 'trust' : ''}">${esc(s)}</span>`).join('')}</div>
+  const card = (p, mine) => `<${mine ? 'button' : 'div'} class="pay" style="display:block;width:100%;text-align:left" ${mine ? `data-person="${p.id}"` : ''}>
+    <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
+    <div class="scope">${p.scope.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
     <div class="pfoot"><span>Ważne: ${esc(p.until)}</span>${mine && p.log[0] ? `<span>Ostatnio ${esc(p.log[0].when)}</span>` : ''}</div></${mine ? 'button' : 'div'}>`;
-  return `<div class="sec">Działasz w ich imieniu</div>${S.forOthers.map(p => card(p, true)).join('')}
+  return `<h1 class="ptitle">Bliscy</h1>
+    <div class="sh" style="margin-top:4px"><h2>Działasz w ich imieniu</h2></div>${S.forOthers.map(p => card(p, true)).join('')}
     <p class="muted" style="margin:-2px 4px 6px">Każdy Twój krok w ich sprawach widzą od razu w swoich aplikacjach.</p>
-    <div class="sec">Działają w Twoim imieniu</div>${D.forMe.map(p => card(p, false)).join('')}
-    <button class="btn ghost mt" id="addDel">${I.plus}Dodaj pełnomocnictwo</button>`;
+    <div class="sh"><h2>Działają w Twoim imieniu</h2></div>${D.forMe.map(p => card(p, false)).join('')}
+    <button class="btn outline mt" id="addDel">${I.plus}Dodaj pełnomocnictwo</button>`;
 }
 function bindPeople() {
   const sc = $('#screen');
   sc.querySelectorAll('[data-person]').forEach(b => b.onclick = () => openView({ k: 'person', id: b.dataset.person }));
   $('#addDel').onclick = () => sheet(`<h3>Nowe pełnomocnictwo</h3><p class="sub">Bez urzędu i bez notariusza dla spraw codziennych.</p>
-    <ol style="margin:14px 0 0 20px;display:grid;gap:10px;font-size:14.5px;line-height:1.45;color:var(--ink2)">
-      <li><b style="color:var(--ink)">Wybierz osobę.</b> Skanujesz jej kod w mObywatelu.</li>
-      <li><b style="color:var(--ink)">Wybierz zakres.</b> Na przykład tylko recepty i wizyty, albo płatności do określonej kwoty.</li>
-      <li><b style="color:var(--ink)">Ustal termin.</b> Pełnomocnictwo wygasa samo.</li>
-      <li><b style="color:var(--ink)">Podpisujecie oboje.</b> Każde z Was swoim kluczem.</li></ol>
-    <p class="muted mt">Osoba, która daje pełnomocnictwo, widzi każdy krok pełnomocnika i może je cofnąć w każdej chwili. W prototypie to tylko podgląd.</p>
+    <ul class="steps" style="margin-top:18px">
+      <li><span style="color:var(--navy);display:grid">${I.scan}</span>Zeskanuj kod osoby w jej mObywatelu</li>
+      <li><span style="color:var(--navy);display:grid">${I.shield}</span>Wybierz zakres, np. tylko recepty</li>
+      <li><span style="color:var(--navy);display:grid">${I.bell}</span>Ustal termin, pełnomocnictwo wygaśnie samo</li>
+      <li><span style="color:var(--navy);display:grid">${I.pen}</span>Podpisujecie oboje, każde swoim kluczem</li></ul>
+    <p class="muted mt" style="margin-top:18px">Osoba, która daje pełnomocnictwo, widzi każdy krok pełnomocnika i może je cofnąć w każdej chwili. W prototypie to tylko podgląd.</p>
     <button class="btn mt" onclick="closeSheet()">Rozumiem</button>`);
 }
 function viewPerson(id) {
   const p = S.forOthers.find(x => x.id === id);
-  return `<div class="card"><div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div><b style="font-size:17px">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div></div>
-      <div class="scope">${p.scope.map(s => `<span class="pill trust">${esc(s)}</span>`).join('')}</div><p class="muted mt">Ważne: ${esc(p.until)}</p></div>
-    <div class="sec">Co zrobiłaś w imieniu tej osoby</div>
-    <div class="list">${p.log.map(l => `<div class="row"><div class="ic trust">${I.check}</div><div class="tx"><b>${esc(l.what)}</b><span>${esc(l.when)} · ${esc(p.name.split(' ')[0])} dostała powiadomienie</span></div></div>`).join('')}</div>
-    <p class="muted" style="margin:10px 4px">Tę samą listę widzi ${esc(p.name.split(' ')[0])} w swojej aplikacji. Nie da się z niej niczego usunąć.</p>
+  const first = p.name.split(' ')[0];
+  return `<div class="pay"><div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div><b>${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div></div>
+      <div class="scope">${p.scope.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div><div class="pfoot"><span>Ważne: ${esc(p.until)}</span></div></div>
+    <div class="sh"><h2>Co zrobiłaś w imieniu tej osoby</h2></div>
+    ${p.log.map(l => `<div class="lrow"><span class="li" style="color:var(--ok)">${I.done}</span><span class="lt"><b>${esc(l.what)}</b><small>${esc(l.when)} · ${esc(first)} dostała powiadomienie</small></span></div>`).join('')}
+    <p class="muted" style="margin:4px 4px 0">Tę samą listę widzi ${esc(first)} w swojej aplikacji. Nie da się z niej niczego usunąć.</p>
     ${id === 'mama' ? `<button class="btn mt" data-run="mama">Wykup recepty mamy</button>` : ''}
-    <button class="btn ghost mt" id="endDel">Zakończ pełnomocnictwo</button>`;
+    <button class="btn outline mt" id="endDel">Zakończ pełnomocnictwo</button>`;
 }
 function bindPerson() {
-  bindCommon($('#screen'));
   $('#endDel').onclick = () => toast('W prototypie pełnomocnictwo zostaje. W prawdziwej aplikacji obie strony mogą je zakończyć w każdej chwili.');
 }
 

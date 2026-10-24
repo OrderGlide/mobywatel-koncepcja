@@ -236,8 +236,8 @@ function confirmStep(c) {
     <b style="display:block;font-size:17px;font-weight:700;margin-top:10px">${esc(c.title)}</b>
     <dl class="kv">${c.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>
     <p class="effect">${esc(c.effect)}</p><div class="rule">${I.lock}<span>${esc(c.rule)}</span></div>
-    <div class="cf"><button class="btn">${I.finger}Podpisz</button><button class="btn outline">Anuluj</button></div>`, 'confirm');
-  const [sign, cancel] = el.querySelectorAll('.cf button');
+    <div class="cf"><button class="btn ghostbtn">Anuluj</button><button class="btn redbtn">${FACEID}Podpisz</button></div>`, 'confirm');
+  const [cancel, sign] = el.querySelectorAll('.cf button');
   cancel.onclick = () => {
     if (S.busy) return;
     finish('Anulowano. Nic nie zostało wysłane.', 'no');
@@ -258,23 +258,27 @@ function confirmStep(c) {
   }
 }
 
-function passkey(title, code, hash, onOk) {
-  sheet(`<div class="passkey"><h3>Potwierdź podpisem</h3>
-    <p class="sub">${esc(title)}</p>
-    <div class="fp" id="fp">${I.finger}</div>
-    <p class="muted" id="fpTxt">Dotknij czytnika albo spójrz w kamerę</p>
-    <div class="hash">Kod czynności: <b>${code}</b><br>Skrót treści: ${hash.slice(0, 24)}…</div>
-    <p class="muted mt">Podpisujesz dokładnie tę treść. Serwer wykona czynność tylko wtedy, gdy skrót się zgadza.</p>
-    <button class="btn mt" id="fpGo">Użyj klucza dostępu</button>
-    <button class="btn outline mt" id="fpNo">Anuluj</button></div>`);
-  $('#fpNo').onclick = closeSheet;
-  $('#fpGo').onclick = async () => {
-    $('#fpGo').disabled = true; $('#fp').classList.add('scan'); $('#fpTxt').textContent = 'Sprawdzam…';
-    await sleep(900);
-    $('#fp').classList.remove('scan'); $('#fp').classList.add('ok'); $('#fp').innerHTML = I.check; $('#fpTxt').textContent = 'Podpisano';
-    await sleep(450);
-    closeSheet(); onOk();
-  };
+// iOS-style Face ID: the phone's key signs the exact content; the code under the box is that content's fingerprint.
+const FACEID = '<svg class="fi-face" viewBox="0 0 64 64"><path d="M6 20V12a6 6 0 016-6h8M44 6h8a6 6 0 016 6v8M58 44v8a6 6 0 01-6 6h-8M20 58h-8a6 6 0 01-6-6v-8M23 23v6M41 23v6M32 23v12h-3M23 43c5 4.5 13 4.5 18 0"/></svg>';
+const FACEOK = '<svg class="fi-ok" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24"/><path d="M21 33l8 8 15-16"/></svg>';
+let faceBusy = false;
+async function passkey(title, code, hash, onOk) {
+  if (faceBusy) return;
+  faceBusy = true;
+  closeSheet();
+  const hud = document.createElement('div');
+  hud.className = 'faceid';
+  hud.innerHTML = `<div class="fi-box">${FACEID}<span>Face ID</span></div><p class="fi-cap">${esc(title)}<br><b>${esc(code)}</b> · ${esc(hash.slice(0, 12))}</p>`;
+  $('#phone').appendChild(hud);
+  await sleep(1100);
+  hud.querySelector('.fi-box').innerHTML = `${FACEOK}<span>Podpisano</span>`;
+  hud.classList.add('ok');
+  await sleep(650);
+  hud.classList.add('out');
+  await sleep(200);
+  hud.remove();
+  faceBusy = false;
+  onOk();
 }
 
 // ---------- side effects from scenarios ----------
@@ -404,6 +408,10 @@ function threadRow(t) {
 }
 
 // ---------- data for screens ----------
+// Illustrated, fictional ID-style portrait (no real person's photo).
+const PORTRAIT = '<svg class="portrait" viewBox="0 0 120 150" aria-hidden="true"><rect width="120" height="150" fill="#dfe2e6"/><path d="M29 72c-7-36 11-55 31-55s38 19 31 55c-2 14-4 27-7 36H36c-3-9-5-22-7-36z" fill="#3a3a3c"/><path d="M50 95h20v20H50z" fill="#b5b5b8"/><path d="M12 150c3-25 21-37 48-37s45 12 48 37z" fill="#2a2a2c"/><path d="M47 113l13 12 13-12" fill="none" stroke="#e9e9ea" stroke-width="3"/><ellipse cx="60" cy="68" rx="21" ry="27" fill="#cdcdcf"/><path d="M37 62c1-21 13-30 24-30 13 0 23 10 22 28-8-11-21-15-33-11-6 2-9 7-13 13z" fill="#3a3a3c"/><path d="M48 62.5h8M64 62.5h8" stroke="#4a4a4c" stroke-width="2" stroke-linecap="round"/><circle cx="52.5" cy="68.5" r="2.1" fill="#2c2c2e"/><circle cx="67.5" cy="68.5" r="2.1" fill="#2c2c2e"/><path d="M60 70v9l-3 2" stroke="#9a9a9d" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M53.5 86.5c4 2.4 9 2.4 13 0" stroke="#6f6466" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>';
+// Neutral hologram-like seal for the card corner (deliberately not the national emblem).
+const SEAL = '<span class="seal"><i></i><b>m</b></span>';
 const me = D.me;
 const DOCS = {
   dowod: { name: 'mDowód', color: '#dc143c', icon: I.id, share: true,
@@ -434,7 +442,9 @@ function viewStart() {
   if (S.forOthers.some(p => p.id === 'mama')) todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
     <p>Atorwastatyna 20 mg i Metformina 500 mg</p><button class="btn" data-run="mama">Wykup z asystentem</button></div>`);
   return `<div class="sh" style="margin-top:6px"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
-    <div class="bigdocs">${S.docOrder.map(k => { const d = DOCS[k]; return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>
+    <div class="bigdocs">${S.docOrder.map(k => { const d = DOCS[k];
+      const inner = k === 'dowod' ? `<div class="minid"><div class="photo">${PORTRAIT}</div><div><b>${esc(me.first.toUpperCase())}</b><span class="showdata">${I.eye}Pokaż dane</span></div></div>${SEAL}` : `<span class="dbadge" style="background:${d.color}">${d.icon}</span>`;
+      return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative">${inner}</div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>
     <div class="sh"><h2>Usługi</h2><button class="pillbtn" data-goto="uslugi">Wszystkie</button></div>
     <div class="grid3">${Object.entries(SERVICES).map(([k, s]) => `<button class="svc" data-svc="${k}"><span class="tile" style="color:${s.color}">${s.icon}</span>${esc(s.label)}</button>`).join('')}</div>
     <div class="sh"><h2>Sprawy życiowe<span class="newtag">Nowe</span></h2></div>
@@ -501,8 +511,11 @@ function bindService(id) {
 function viewDocs() {
   return `<h1 class="ptitle" style="margin-bottom:4px">Dokumenty</h1>
     <div class="linkbtns"><button id="customize">Dostosuj</button><button id="addDoc2">Dodaj</button></div>
-    <div class="wallet">${S.docOrder.map(k => { const d = DOCS[k]; return `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
-      <span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span></button>`; }).join('')}</div>`;
+    <div class="wallet">${[...S.docOrder].reverse().map((k, i, all) => { const d = DOCS[k]; const front = i === all.length - 1;
+      const body = front && k === 'dowod'
+        ? `${SEAL}<div class="wfront"><div class="photo">${PORTRAIT}</div><div><b class="wname">${esc(me.first.toUpperCase())}</b><span class="showdata">${I.eye}Pokaż dane</span></div></div>`
+        : `<span class="wb">${d.icon}</span><span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span>`;
+      return `<button class="wcard w-${k} ${front ? 'front' : ''}" data-doc="${k}"><b>${esc(d.name)}</b>${body}</button>`; }).join('')}</div>`;
 }
 function bindDocs() {
   bindCommon($('#screen'));
@@ -512,15 +525,15 @@ function bindDocs() {
 function viewDoc(id) {
   const d = DOCS[id];
   let top;
-  if (id === 'dowod') top = `<div class="idtop"><div class="idleft"><div class="photo"></div><div class="flag"></div></div><div class="fields">
+  if (id === 'dowod') top = `<div class="idtop"><div class="idleft"><div class="photo">${PORTRAIT}</div><div class="flag"></div></div><div class="fields">
       <div><b>${esc(me.first)}</b><span>Imię (imiona)</span></div><div><b>${esc(me.last)}</b><span>Nazwisko</span></div>
       <div><b>Polskie</b><span>Obywatelstwo</span></div><div><b>${esc(me.born)}</b><span>Data urodzenia</span></div><div><b>${esc(me.pesel)}</b><span>Numer PESEL</span></div></div></div>`;
-  else if (id === 'prawojazdy') top = `<div class="idtop pj"><div class="photo"></div><div class="fields">
+  else if (id === 'prawojazdy') top = `<div class="idtop pj"><div class="photo">${PORTRAIT}</div><div class="fields">
       <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>${esc(me.dl.cat)}</b><span>Kategorie</span></div>
       <div><b>${esc(me.dl.valid)}</b><span>Ważne do</span></div><div><b>${me.dl.points} pkt</b><span>Punkty karne</span></div></div></div>`;
-  else if (id === 'kdr') top = `<div class="idtop" style="background:repeating-radial-gradient(ellipse at 100% 100%,rgba(255,255,255,.6) 0 1px,transparent 1.5px 9px),linear-gradient(160deg,#e2f6f0,#b9e6d9)"><div class="photo"></div><div class="fields">
+  else if (id === 'kdr') top = `<div class="idtop" style="background:repeating-radial-gradient(ellipse at 100% 100%,rgba(255,255,255,.6) 0 1px,transparent 1.5px 9px),linear-gradient(160deg,#e2f6f0,#b9e6d9)"><div class="photo">${PORTRAIT}</div><div class="fields">
       <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>2024/118 554</b><span>Numer karty</span></div><div><b>Bezterminowo</b><span>Ważna</span></div></div></div>`;
-  else if (id !== 'pojazd') top = `<div class="idtop"><div class="photo"></div><div class="fields">${d.rows.slice(0, 4).map(r => `<div><b>${esc(r[1])}</b><span>${esc(r[0])}</span></div>`).join('')}</div></div>`;
+  else if (id !== 'pojazd') top = `<div class="idtop"><div class="photo">${PORTRAIT}</div><div class="fields">${d.rows.slice(0, 4).map(r => `<div><b>${esc(r[1])}</b><span>${esc(r[0])}</span></div>`).join('')}</div></div>`;
   else top = `<div class="idtop car"><div class="fields">
       <div><b>${esc(me.car.name)}</b><span>Pojazd</span></div><div><b>${esc(me.car.plate)}</b><span>Numer rejestracyjny</span></div>
       <div><b>${esc(me.car.oc)}</b><span>OC ważne do</span></div><div><b>${esc(me.car.inspection)}</b><span>Badanie techniczne do</span></div></div></div>`;

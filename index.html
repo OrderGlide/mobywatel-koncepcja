@@ -13,7 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="mObywatel+">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="stylesheet" href="app.css?v=10">
+<link rel="stylesheet" href="app.css?v=12">
 </head>
 <body>
 <div class="stage">
@@ -24,8 +24,10 @@
       <header class="topbar" id="topbar"></header>
       <main class="screen" id="screen"></main>
       <div class="composer" id="composer" hidden>
-        <input id="ask" type="text" autocomplete="off" placeholder="Napisz, co chcesz załatwić">
-        <button id="askSend" class="send" aria-label="Wyślij"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+        <div class="cbox"><button class="cicon" id="askCam" aria-label="Zdjęcie dokumentu"><svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 015.5 7h2.2l1.4-2h5.8l1.4 2h2.2A1.5 1.5 0 0120 8.5v9a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5z"/><circle cx="12" cy="13" r="3.2"/></svg></button>
+        <input id="ask" type="text" autocomplete="off" placeholder="Co chcesz załatwić?">
+        <button class="cicon" id="askMic" aria-label="Mów"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg></button></div>
+        <button id="askSend" class="send" aria-label="Wyślij"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
       </div>
       <nav class="tabbar" id="tabbar">
         <button data-tab="start"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 10.5l8-6.5 8 6.5V20h-5v-6H9v6H4z"/></svg></span>Start</button>
@@ -72,9 +74,9 @@
     <p class="fine">Osoby i dane są fikcyjne. To nie jest aplikacja mObywatel ani usługa administracji publicznej. Prototyp nie używa godła ani oficjalnych oznaczeń i działa bez sieci, kont i śledzenia. <button class="reset" id="resetBtn">Zacznij od nowa</button></p>
   </aside>
 </div>
-<script src="data.js?v=10"></script>
-<script src="app.js?v=10"></script>
-<script src="uslugi.js?v=10"></script>
-<script src="extras.js?v=10"></script>
+<script src="data.js?v=12"></script>
+<script src="app.js?v=12"></script>
+<script src="uslugi.js?v=12"></script>
+<script src="extras.js?v=12"></script>
 </body>
 </html>

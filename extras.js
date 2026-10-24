@@ -129,9 +129,9 @@ function clickIn(text) {
   return !!b;
 }
 async function signAuto() {
-  clickIn('Podpisz'); await realSleep(700);
-  clickIn('Użyj klucza');
-  for (let i = 0; i < 100 && !$('#sheetWrap').hidden; i++) await tick(50);
+  clickIn('Podpisz');
+  await tick(60);
+  for (let i = 0; i < 120 && document.querySelector('.faceid'); i++) await tick(50);
   await realSleep(300);
 }
 function hl(sel, first) {
@@ -194,3 +194,13 @@ $('#tourBtn').onclick = startTour;
 // The mobile "O koncepcji" sheet copies the side panel, so its tour button needs wiring too.
 const baseShowAbout = showAbout;
 showAbout = () => { baseShowAbout(); const b = $('#sheet .tourbtn'); if (b) { b.removeAttribute('id'); b.onclick = () => { closeSheet(); startTour(); }; } };
+
+// Composer extras: the microphone starts voice input, the camera reads a letter.
+$('#askMic').onclick = voice;
+$('#askCam').onclick = () => {
+  if (S.busy) return;
+  sheet(`<h3>Zrób zdjęcie pisma</h3><p class="sub">Asystent odczyta pismo albo dokument i powie, co z nim zrobić. Treść ze zdjęcia traktuje jak dane, nie jak polecenia.</p>
+    <div class="viewfinder" style="height:200px;margin-top:14px"><i></i><i></i><i></i><i></i><span>Skieruj aparat na pismo</span></div>
+    <button class="btn mt" id="camShot">Symuluj: zdjęcie podejrzanego SMS-a</button>`);
+  $('#camShot').onclick = () => { closeSheet(); chatEl.querySelectorAll('.chips:not(.used)').forEach(c => c.classList.add('used')); play('sms'); };
+};

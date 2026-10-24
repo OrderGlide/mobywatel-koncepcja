@@ -431,7 +431,7 @@ function viewStart() {
   const todo = [];
   if (!S.carSold) todo.push(`<div class="pay"><span class="status red"><i></i>Kończy się 29.10</span><b>OC Toyoty Corolla PO 4R521</b>
     <p>Ubezpieczyciel wznowi polisę sam. Sprawdź, czy tego chcesz.</p><button class="btn" data-run="oc">Sprawdź z asystentem</button></div>`);
-  todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
+  if (S.forOthers.some(p => p.id === 'mama')) todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
     <p>Atorwastatyna 20 mg i Metformina 500 mg</p><button class="btn" data-run="mama">Wykup z asystentem</button></div>`);
   return `<div class="sh" style="margin-top:6px"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
     <div class="bigdocs">${S.docOrder.map(k => { const d = DOCS[k]; return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>

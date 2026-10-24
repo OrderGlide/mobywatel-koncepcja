@@ -6,7 +6,14 @@
 <meta name="theme-color" content="#f2f4f8">
 <meta name="description" content="Koncepcja na mObywatel Challenge: asystent, który załatwia sprawy za Ciebie, ale nigdy bez Ciebie. Prototyp z fikcyjnymi danymi.">
 <title>mObywatel pod Twoją kontrolą</title>
-<link rel="stylesheet" href="app.css?v=9">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-64.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="mObywatel+">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="app.css?v=10">
 </head>
 <body>
 <div class="stage">
@@ -29,6 +36,8 @@
       </nav>
       <div class="homebar"></div>
       <div class="onb" id="onb" hidden></div>
+      <div class="mamaview" id="mamaView" hidden></div>
+      <div class="coach" id="coach" hidden></div>
       <div class="sheet-wrap" id="sheetWrap" hidden><div class="sheet" id="sheet"></div></div>
       <div class="toast" id="toast" hidden></div>
     </div>
@@ -37,6 +46,7 @@
   <aside class="about" id="about">
     <div class="brandrow"><div class="mlogo">m</div><div><b>mObywatel</b><small>koncepcja na mObywatel Challenge</small></div></div>
     <h1>Pod Twoją kontrolą</h1>
+    <button class="tourbtn" id="tourBtn"><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/></svg></span><span><b>Pokaż mi w 2 minuty</b><small>Prototyp sam przeprowadzi Cię przez najważniejsze pomysły</small></span></button>
     <p class="lead">Asystent, który załatwia sprawy za Ciebie, ale nigdy bez Ciebie. Każdą decyzję widać, każde udostępnienie danych da się cofnąć, a granic asystenta nie zmieni żadna rozmowa.</p>
 
     <div class="pillars">
@@ -55,13 +65,16 @@
       <button data-go="dane"><b>Moje dane</b><span>Kto czytał Twoje dane</span></button>
       <button data-go="dowod"><b>Pokaż dowód</b><span>Tylko to, co trzeba</span></button>
       <button data-run="portfel"><b>Zgubiony portfel</b><span>Zastrzeżenie w minutę</span></button>
+      <button data-go="mama"><b>Widok mamy</b><span>Co widzi osoba, której pomagasz</span></button>
+      <button data-go="senior"><b>Tryb seniora</b><span>Duży tekst, prosty ekran</span></button>
     </div>
 
     <p class="fine">Osoby i dane są fikcyjne. To nie jest aplikacja mObywatel ani usługa administracji publicznej. Prototyp nie używa godła ani oficjalnych oznaczeń i działa bez sieci, kont i śledzenia. <button class="reset" id="resetBtn">Zacznij od nowa</button></p>
   </aside>
 </div>
-<script src="data.js?v=9"></script>
-<script src="app.js?v=9"></script>
-<script src="uslugi.js?v=9"></script>
+<script src="data.js?v=10"></script>
+<script src="app.js?v=10"></script>
+<script src="uslugi.js?v=10"></script>
+<script src="extras.js?v=10"></script>
 </body>
 </html>

@@ -204,3 +204,26 @@ $('#askCam').onclick = () => {
     <button class="btn mt" id="camShot">Symuluj: zdjęcie podejrzanego SMS-a</button>`);
   $('#camShot').onclick = () => { closeSheet(); chatEl.querySelectorAll('.chips:not(.used)').forEach(c => c.classList.add('used')); play('sms'); };
 };
+
+// ---------- motion: push when going deeper, pop when going back, cascade on tab change ----------
+let lastTab = null, lastDepth = 0, lastStep = null;
+const baseRender = render;
+render = () => {
+  const depth = S.view ? (S.view.from ? 2 : 1) : 0;
+  const step = S.view && S.view.st ? JSON.stringify([S.view.st.step, S.view.st.pay, S.view.st.done, S.view.st.hist]) : null;
+  let kind = null;
+  if (S.tab !== lastTab) kind = 'fade';
+  else if (depth > lastDepth) kind = 'push';
+  else if (depth < lastDepth) kind = 'pop';
+  else if (step !== lastStep && step !== null) kind = 'push';
+  baseRender();
+  lastTab = S.tab; lastDepth = depth; lastStep = step;
+  if (kind) animateScreen(kind);
+};
+function animateScreen(kind) {
+  const sc = $('#screen'), tb = $('#topbar');
+  sc.classList.remove('a-push', 'a-pop', 'a-fade'); tb.classList.remove('a-title');
+  void sc.offsetWidth;
+  [...sc.children].slice(0, 16).forEach((c, i) => c.style.setProperty('--i', i));
+  sc.classList.add('a-' + kind); tb.classList.add('a-title');
+}

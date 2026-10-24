@@ -1,7 +1,7 @@
 'use strict';
 // Offline support: network first so updates arrive, cache as the fallback when there is no connection.
-const CACHE = 'mobywatel-koncepcja-v12';
-const CORE = ['./', 'index.html', 'app.css?v=12', 'data.js?v=12', 'app.js?v=12', 'uslugi.js?v=12', 'extras.js?v=12',
+const CACHE = 'mobywatel-koncepcja-v13';
+const CORE = ['./', 'index.html', 'app.css?v=13', 'data.js?v=13', 'app.js?v=13', 'uslugi.js?v=13', 'extras.js?v=13',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-64.png'];
 
 self.addEventListener('install', e => {

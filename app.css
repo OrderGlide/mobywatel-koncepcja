@@ -383,3 +383,49 @@ button.lrow:hover{box-shadow:0 2px 8px rgba(20,26,36,.1)}
 .onb .btn+.btn{margin-top:10px}
 .onb .brand{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:17px}
 @media (max-width:900px){.onb{padding-top:calc(30px + env(safe-area-inset-top))}}
+
+/* ---------- working service flows ---------- */
+.field{display:block;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field>span{display:block;font-size:13.5px;font-weight:600;margin-bottom:7px}
+.field input,.field textarea{width:100%;border:1.5px solid #cfd5df;border-radius:10px;padding:12px 14px;font-size:15px;outline:none;background:#fff;font-family:inherit;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--navy)}
+.field input:disabled{background:var(--bg);color:var(--ink2)}
+.err{color:var(--red);font-size:13.5px;margin:10px 4px 0;font-weight:600}
+.stepno{font-size:13px;font-weight:700;color:var(--navy);margin:6px 0 4px}
+.thumb{width:96px;height:72px;border-radius:10px;background:linear-gradient(135deg,#7da35c,#3f6b34);display:flex;align-items:flex-end;padding:6px;color:#fff;font-size:11px}
+.map{border-radius:12px;padding:44px 14px 12px;background:repeating-linear-gradient(0deg,transparent 0 22px,#e5e9f0 22px 23px),repeating-linear-gradient(90deg,transparent 0 22px,#e5e9f0 22px 23px),#f6f8fb;position:relative}
+.map i{position:absolute;top:12px;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50% 50% 50% 0;background:var(--red);transform:rotate(-45deg)}
+.map b{display:block;font-size:14px}.map small{color:var(--ink3);font-size:12.5px}
+.check{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;transition:.12s}
+.check .box{width:24px;height:24px;border-radius:7px;border:2px solid #9aa3b2;display:grid;place-items:center;color:transparent;flex:none}
+.check .box svg{width:15px;height:15px;stroke-width:3}
+.check.on{border-color:var(--navy);background:var(--navyTint)}
+.check.on .box{background:var(--navy);border-color:var(--navy);color:#fff}
+.check b{display:block;font-size:15px}.check small{display:block;font-size:12.5px;color:var(--ink3);margin-top:1px}
+.seg.two{grid-template-columns:1fr 1fr}
+.train{display:flex;align-items:center;gap:10px;width:100%;background:#fff;border-radius:14px;box-shadow:var(--sh);padding:14px;margin-bottom:10px;text-align:left;border:1.5px solid transparent}
+.train:hover{border-color:var(--navy)}
+.train .tt b{display:block;font-size:17px;font-weight:700}.train .tt small{display:block;font-size:12px;color:var(--ink3)}
+.train .tline{flex:1;text-align:center}
+.train .tline small{font-size:12px;color:var(--ink3)}
+.train .tline i{display:block;height:2px;background:#cfd5df;margin-top:4px;border-radius:1px}
+.train .price{font-weight:700;color:var(--navy);font-size:15px;white-space:nowrap}
+.ticket{background:#fff;border-radius:18px;box-shadow:0 2px 14px rgba(20,26,36,.1);padding:18px;margin-top:8px}
+.ticket .th{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--ink3)}
+.ticket .th b{font-size:18px;color:var(--ink)}
+.ticket .tr{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-bottom:12px;border-bottom:1.5px dashed var(--line)}
+.ticket .tr b{display:block;font-size:24px;font-weight:800}.ticket .tr small{font-size:13px;color:var(--ink2)}
+.faq{background:#fff;border-radius:14px;box-shadow:var(--sh);margin-bottom:10px;padding:0 16px}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 0;font-weight:600;font-size:15px;cursor:pointer}
+.faq summary::-webkit-details-marker{display:none}
+.faq[open] summary .chev{transform:rotate(90deg)}
+.faq p{font-size:14px;color:var(--ink2);line-height:1.55;padding-bottom:15px}
+.listen{display:flex;justify-content:center;align-items:center;gap:6px;height:80px;margin:16px 0}
+.listen i{width:7px;border-radius:4px;background:var(--navy);animation:wave 1s ease-in-out infinite}
+.listen i:nth-child(1){height:20px}.listen i:nth-child(2){height:44px;animation-delay:.1s}.listen i:nth-child(3){height:64px;animation-delay:.2s}.listen i:nth-child(4){height:40px;animation-delay:.3s}.listen i:nth-child(5){height:24px;animation-delay:.4s}
+@keyframes wave{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+.viewfinder.scanning::after{content:"";position:absolute;left:60px;right:60px;height:3px;background:#5aa2ff;box-shadow:0 0 12px #5aa2ff;animation:scanline 1.2s ease-in-out infinite}
+@keyframes scanline{0%{top:50px}50%{top:200px}100%{top:50px}}
+.wave-ekuz{background:repeating-radial-gradient(ellipse at 110% -10%,rgba(255,255,255,.55) 0 1px,transparent 1.5px 8px),linear-gradient(135deg,#d9e4fb,#a8bff0)}
+.w-ekuz{background:repeating-radial-gradient(ellipse at 110% -20%,rgba(255,255,255,.1) 0 1px,transparent 1.5px 9px),linear-gradient(110deg,#2a5cc8,#163f99)}

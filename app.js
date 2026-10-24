@@ -61,7 +61,7 @@ const S = {
   access: JSON.parse(JSON.stringify(D.access)),
   forOthers: JSON.parse(JSON.stringify(D.forOthers)),
   rules: JSON.parse(JSON.stringify(D.rules)),
-  threads: [], cur: null, min: 14
+  threads: [], cur: null, min: 14, docOrder: ['dowod', 'kdr', 'prawojazdy', 'pojazd'], peselLocked: null
 };
 const chatEl = document.createElement('div');
 chatEl.className = 'chat';
@@ -357,7 +357,7 @@ function topbar(mode, title, opts = {}) {
   }
   const bb = $('#backBtn'); if (bb) bb.onclick = () => openView(S.view && S.view.from ? S.view.from : null);
   const av = $('#avBtn'); if (av) av.onclick = () => openTab('wiecej');
-  const bl = $('#bellBtn'); if (bl) bl.onclick = () => toast('Nie masz nowych powiadomień.');
+  const bl = $('#bellBtn'); if (bl) bl.onclick = showNotifications;
   const ed = $('#editBtn'); if (ed) ed.onclick = () => toast('Tu ułożysz kolejność usług, jak w obecnej aplikacji.');
   $('#infoBtn').onclick = showAbout;
 }
@@ -374,7 +374,9 @@ function render() {
   if (v && v.k === 'rules') { topbar('center', 'Granice asystenta', { back: true }); sc.innerHTML = viewRules(); bindRules(); }
   else if (v && v.k === 'trace') { topbar('center', 'Ślad sprawy', { back: true }); sc.innerHTML = viewTrace(v.id); }
   else if (v && v.k === 'doc') { topbar('center', DOCS[v.id].name, { back: true }); sc.innerHTML = viewDoc(v.id); bindDoc(v.id); }
-  else if (v && v.k === 'person') { topbar('center', 'Pełnomocnictwo', { back: true }); sc.innerHTML = viewPerson(v.id); bindCommon(sc); bindPerson(); }
+  else if (v && v.k === 'person') { topbar('center', 'Pełnomocnictwo', { back: true }); sc.innerHTML = viewPerson(v.id); bindCommon(sc); bindPerson(v.id); }
+  else if (v && v.k === 'settings') { topbar('center', 'Ustawienia', { back: true }); sc.innerHTML = viewSettings(); bindSettings(); }
+  else if (v && v.k === 'help') { topbar('center', 'Pomoc', { back: true }); sc.innerHTML = viewHelp(); }
   else if (v && v.k === 'event') { topbar('center', EVENTS[v.id].label, { back: true }); sc.innerHTML = viewEvent(v.id); bindCommon(sc); }
   else if (v && v.k === 'svc') { topbar('center', SERVICES[v.id].label, { back: true }); sc.innerHTML = viewService(v.id); bindService(v.id); }
   else if (v && v.k === 'dane') { topbar('center', 'Moje dane', { back: true }); sc.innerHTML = viewData(); bindData(); }
@@ -432,7 +434,7 @@ function viewStart() {
   todo.push(`<div class="pay"><span class="status trust"><i></i>W imieniu mamy</span><b>2 recepty Haliny Nowak do wykupu</b>
     <p>Atorwastatyna 20 mg i Metformina 500 mg</p><button class="btn" data-run="mama">Wykup z asystentem</button></div>`);
   return `<div class="sh" style="margin-top:6px"><h2>Dokumenty</h2><div class="pillrow"><button class="pillbtn" id="addDoc">Dodaj</button><button class="pillbtn" data-goto="dokumenty">Wszystkie</button></div></div>
-    <div class="bigdocs">${['dowod', 'kdr', 'prawojazdy', 'pojazd'].map(k => { const d = DOCS[k]; return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>
+    <div class="bigdocs">${S.docOrder.map(k => { const d = DOCS[k]; return `<button class="bigdoc" data-doc="${k}"><div class="dtop wave-${k}" style="position:relative"><span class="dbadge" style="background:${d.color}">${d.icon}</span></div><div class="dbot"><b>${esc(d.name)}</b>${I.chev}</div></button>`; }).join('')}</div>
     <div class="sh"><h2>Usługi</h2><button class="pillbtn" data-goto="uslugi">Wszystkie</button></div>
     <div class="grid3">${Object.entries(SERVICES).map(([k, s]) => `<button class="svc" data-svc="${k}"><span class="tile" style="color:${s.color}">${s.icon}</span>${esc(s.label)}</button>`).join('')}</div>
     <div class="sh"><h2>Sprawy życiowe<span class="newtag">Nowe</span></h2></div>
@@ -443,8 +445,11 @@ function viewStart() {
 }
 function bindStart() {
   const sc = $('#screen'); bindCommon(sc);
-  $('#askBox').onclick = () => { openTab('start', { k: 'chat' }); setTimeout(() => $('#ask').focus(), 50); };
-  $('#addDoc').onclick = () => toast('W prototypie są cztery dokumenty. Dodawanie kolejnych działa jak w obecnej aplikacji.');
+  $('#askBox').onclick = e => {
+    if (e.target.closest('.mic')) return voice();
+    openTab('start', { k: 'chat' }); setTimeout(() => $('#ask').focus(), 50);
+  };
+  $('#addDoc').onclick = addDocument;
 }
 
 function viewEvent(id) {
@@ -496,13 +501,13 @@ function bindService(id) {
 function viewDocs() {
   return `<h1 class="ptitle" style="margin-bottom:4px">Dokumenty</h1>
     <div class="linkbtns"><button id="customize">Dostosuj</button><button id="addDoc2">Dodaj</button></div>
-    <div class="wallet">${['dowod', 'kdr', 'prawojazdy', 'pojazd'].map(k => { const d = DOCS[k]; return `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
+    <div class="wallet">${S.docOrder.map(k => { const d = DOCS[k]; return `<button class="wcard w-${k}" data-doc="${k}"><b>${esc(d.name)}</b><span class="wb">${d.icon}</span>
       <span class="wsub">${k === 'pojazd' ? esc(S.carSold ? 'Toyota Corolla, zgłoszono zbycie' : me.car.name + ', ' + me.car.plate) : esc(me.first + ' ' + me.last)}</span></button>`; }).join('')}</div>`;
 }
 function bindDocs() {
   bindCommon($('#screen'));
-  $('#customize').onclick = () => toast('Tu ułożysz kolejność dokumentów, jak w obecnej aplikacji.');
-  $('#addDoc2').onclick = () => toast('W prototypie są cztery dokumenty.');
+  $('#customize').onclick = customizeDocs;
+  $('#addDoc2').onclick = addDocument;
 }
 function viewDoc(id) {
   const d = DOCS[id];
@@ -515,6 +520,7 @@ function viewDoc(id) {
       <div><b>${esc(me.dl.valid)}</b><span>Ważne do</span></div><div><b>${me.dl.points} pkt</b><span>Punkty karne</span></div></div></div>`;
   else if (id === 'kdr') top = `<div class="idtop" style="background:repeating-radial-gradient(ellipse at 100% 100%,rgba(255,255,255,.6) 0 1px,transparent 1.5px 9px),linear-gradient(160deg,#e2f6f0,#b9e6d9)"><div class="photo"></div><div class="fields">
       <div><b>${esc(me.first + ' ' + me.last)}</b><span>Imię i nazwisko</span></div><div><b>2024/118 554</b><span>Numer karty</span></div><div><b>Bezterminowo</b><span>Ważna</span></div></div></div>`;
+  else if (id !== 'pojazd') top = `<div class="idtop"><div class="photo"></div><div class="fields">${d.rows.slice(0, 4).map(r => `<div><b>${esc(r[1])}</b><span>${esc(r[0])}</span></div>`).join('')}</div></div>`;
   else top = `<div class="idtop car"><div class="fields">
       <div><b>${esc(me.car.name)}</b><span>Pojazd</span></div><div><b>${esc(me.car.plate)}</b><span>Numer rejestracyjny</span></div>
       <div><b>${esc(me.car.oc)}</b><span>OC ważne do</span></div><div><b>${esc(me.car.inspection)}</b><span>Badanie techniczne do</span></div></div></div>`;
@@ -580,7 +586,7 @@ function viewQr() {
     </div>`;
 }
 function bindQr() {
-  $('#scanBtn').onclick = () => toast('W prototypie aparat nie jest używany. Spróbuj „Potwierdź swoje dane”.');
+  $('#scanBtn').onclick = scanFlow;
   $('#qrId').onclick = () => shareFlow('dowod');
   $('#qrDl').onclick = () => shareFlow('prawojazdy');
 }
@@ -610,7 +616,8 @@ function bindMore() {
   $('#mTrace').onclick = () => { S.dataTab = 'sprawy'; openView({ k: 'dane' }); };
   $('#mRules').onclick = () => openView({ k: 'rules' });
   $('#mPeople').onclick = () => openView({ k: 'bliscy' });
-  $('#mSet').onclick = $('#mHelp').onclick = () => toast('Ta część działa jak w obecnej aplikacji.');
+  $('#mSet').onclick = () => openView({ k: 'settings' });
+  $('#mHelp').onclick = () => openView({ k: 'help' });
   $('#mAbout').onclick = showAbout;
   $('#mIntro').onclick = () => onboarding(true);
 }
@@ -664,7 +671,7 @@ function bindData() {
     $('#revNo').onclick = closeSheet;
     $('#revOk').onclick = () => { c.revoked = now(); closeSheet(); render(); toast(`Zgoda cofnięta o ${now()}. ${c.who} nie ma już dostępu.`); };
   });
-  const nm = $('#notMe'); if (nm) nm.onclick = () => toast('Zgłoszenie trafiłoby do inspektora ochrony danych instytucji, która odczytała dane.');
+  const nm = $('#notMe'); if (nm) nm.onclick = reportRead;
 }
 
 function viewTrace(id) {
@@ -694,7 +701,7 @@ function viewPeople() {
   const card = (p, mine) => `<${mine ? 'button' : 'div'} class="pay" style="display:block;width:100%;text-align:left" ${mine ? `data-person="${p.id}"` : ''}>
     <div class="person"><div class="face" style="background:${p.color}">${p.initials}</div><div style="flex:1"><b style="margin:0">${esc(p.name)}</b><div class="muted">${esc(p.rel)}</div></div>${mine ? I.chev : ''}</div>
     <div class="scope">${p.scope.map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
-    <div class="pfoot"><span>Ważne: ${esc(p.until)}</span>${mine && p.log[0] ? `<span>Ostatnio ${esc(p.log[0].when)}</span>` : ''}</div></${mine ? 'button' : 'div'}>`;
+    <div class="pfoot"><span>Ważne: ${esc(p.until)}</span>${p.pending ? '<span class="status warn"><i></i>Czeka na podpis</span>' : mine && p.log[0] ? `<span>Ostatnio ${esc(p.log[0].when)}</span>` : ''}</div></${mine ? 'button' : 'div'}>`;
   return `<div class="sh" style="margin-top:4px"><h2>Działasz w ich imieniu</h2></div>${S.forOthers.map(p => card(p, true)).join('')}
     <p class="muted" style="margin:-2px 4px 6px">Każdy Twój krok w ich sprawach widzą od razu w swoich aplikacjach.</p>
     <div class="sh"><h2>Działają w Twoim imieniu</h2></div>${D.forMe.map(p => card(p, false)).join('')}
@@ -703,14 +710,7 @@ function viewPeople() {
 function bindPeople() {
   const sc = $('#screen');
   sc.querySelectorAll('[data-person]').forEach(b => b.onclick = () => openView({ k: 'person', id: b.dataset.person, from: { k: 'bliscy' } }));
-  $('#addDel').onclick = () => sheet(`<h3>Nowe pełnomocnictwo</h3><p class="sub">Bez urzędu i bez notariusza dla spraw codziennych.</p>
-    <ul class="steps" style="margin-top:18px">
-      <li><span style="color:var(--navy);display:grid">${I.scan}</span>Zeskanuj kod osoby w jej mObywatelu</li>
-      <li><span style="color:var(--navy);display:grid">${I.shield}</span>Wybierz zakres, np. tylko recepty</li>
-      <li><span style="color:var(--navy);display:grid">${I.bell}</span>Ustal termin, pełnomocnictwo wygaśnie samo</li>
-      <li><span style="color:var(--navy);display:grid">${I.pen}</span>Podpisujecie oboje, każde swoim kluczem</li></ul>
-    <p class="muted mt" style="margin-top:18px">Osoba, która daje pełnomocnictwo, widzi każdy krok pełnomocnika i może je cofnąć w każdej chwili. W prototypie to tylko podgląd.</p>
-    <button class="btn mt" onclick="closeSheet()">Rozumiem</button>`);
+  $('#addDel').onclick = addDelegation;
 }
 function viewPerson(id) {
   const p = S.forOthers.find(x => x.id === id);
@@ -723,8 +723,8 @@ function viewPerson(id) {
     ${id === 'mama' ? `<button class="btn mt" data-run="mama">Wykup recepty mamy</button>` : ''}
     <button class="btn outline mt" id="endDel">Zakończ pełnomocnictwo</button>`;
 }
-function bindPerson() {
-  $('#endDel').onclick = () => toast('W prototypie pełnomocnictwo zostaje. W prawdziwej aplikacji obie strony mogą je zakończyć w każdej chwili.');
+function bindPerson(id) {
+  $('#endDel').onclick = () => endDelegation(id);
 }
 
 // ---------- onboarding (same pattern as the app's first run) ----------
@@ -782,5 +782,5 @@ $('#resetBtn').onclick = () => { try { localStorage.removeItem('mob-onb'); } cat
 $('#askSend').onclick = () => ask($('#ask').value);
 $('#ask').addEventListener('keydown', e => { if (e.key === 'Enter') ask($('#ask').value); });
 $('#clock').textContent = now();
-openTab('start');
-if (!FAST) onboarding(false);
+// Start after uslugi.js has added its services and flows.
+document.addEventListener('DOMContentLoaded', () => { openTab('start'); if (!FAST) onboarding(false); });
